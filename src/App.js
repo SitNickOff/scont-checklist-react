@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Auth from './components/Auth';
 import ObjectsList from './components/ObjectsList';
 import ChecklistList from './components/ChecklistList';
-import QuestionsList from './components/QuestionsList';
+import QuestionsStepper from './components/QuestionsStepper';
 
 const App = () => {
     const [chatId] = useState('328084848'); // Пример chat_id, измените по необходимости
@@ -21,7 +21,7 @@ const App = () => {
                     <>
                         <Route path="/objects" element={<ObjectsList chatId={chatId} />} />
                         <Route path="/checklists" element={<ChecklistList chatId={chatId} />} />
-                        <Route path="/questions" element={<QuestionsList chatId={chatId} />} />
+                        <Route path="/questions" element={<QuestionsStepper chatId={chatId} />} />
                     </>
                 )}
                 {/* Redirect any unknown paths */}

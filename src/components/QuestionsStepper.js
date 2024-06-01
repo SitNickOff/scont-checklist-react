@@ -1,0 +1,156 @@
+import React, { useState } from 'react';
+import {
+    Box,
+    Button,
+    Step,
+    StepLabel,
+    Stepper,
+    TextField,
+    Typography,
+    Chip
+} from '@mui/material';
+import { mockQuestions } from '../mocks/mockData';
+
+const QuestionsStepper = ({ chatId }) => {
+    const [activeStep, setActiveStep] = useState(0);
+    const [answers, setAnswers] = useState(Array(mockQuestions.length).fill({ text: '', comment: '', photo: null }));
+    const [isReview, setIsReview] = useState(false);
+
+    const handleNext = () => {
+        if (activeStep === mockQuestions.length - 1) {
+            setIsReview(true);
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
+    };
+
+    const handleBack = () => {
+        if (isReview) {
+            setIsReview(false);
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        }
+    };
+
+    const handleSave = () => {
+        // Add validation here
+        const allFieldsFilled = answers.every((answer, index) => {
+            const question = mockQuestions[index];
+            const isTextValid = answer.text.trim() !== '';
+            const isCommentValid = !question.requireComment || answer.comment.trim() !== '';
+            const isPhotoValid = !question.requirePhoto || answer.photo !== null;
+
+            return isTextValid && isCommentValid && isPhotoValid;
+        });
+
+        if (allFieldsFilled) {
+            console.log('Saving answers:', answers);
+            // Add API call to save answers here
+        } else {
+            alert('Please fill all the required fields.');
+        }
+    };
+
+    const handleChange = (index, field, value) => {
+        const newAnswers = [...answers];
+        newAnswers[index][field] = value;
+        setAnswers(newAnswers);
+    };
+
+    const handleEdit = (index) => {
+        setActiveStep(index);
+        setIsReview(false);
+    };
+
+    const steps = mockQuestions.map((question) => question.name);
+
+    return (
+        <Box sx={{ width: '100%' }}>
+            <Stepper activeStep={activeStep}>
+                {steps.map((label, index) => (
+                    <Step key={index}>
+                        <StepLabel>{label}</StepLabel>
+                    </Step>
+                ))}
+            </Stepper>
+            <Box sx={{ mt: 2, mb: 1 }}>
+                {isReview ? (
+                    <Box>
+                        <Typography variant="h5">Review Your Answers</Typography>
+                        {answers.map((answer, index) => (
+                            <Box key={index} sx={{ mb: 2 }}>
+                                <Typography variant="h6">{mockQuestions[index].name}</Typography>
+                                <Typography>Answer: {answer.text}</Typography>
+                                <Typography>Comment: {answer.comment}</Typography>
+                                {answer.photo && <Typography>Photo: {answer.photo.name}</Typography>}
+                                <Button onClick={() => handleEdit(index)}>Edit</Button>
+                            </Box>
+                        ))}
+                        <Button variant="contained" color="primary" onClick={handleSave}>
+                            Save All
+                        </Button>
+                    </Box>
+                ) : (
+                    <Box>
+                        <Typography variant="h6">{mockQuestions[activeStep].name}</Typography>
+                        <Box>
+                            {mockQuestions[activeStep].options.map((option, index) => (
+                                <Chip
+                                    key={index}
+                                    label={option}
+                                    onClick={() => handleChange(activeStep, 'text', option)}
+                                    color={answers[activeStep].text === option ? 'primary' : 'default'}
+                                    clickable
+                                    sx={{ m: 1 }}
+                                />
+                            ))}
+                        </Box>
+                        {mockQuestions[activeStep].requireComment && (
+                            <TextField
+                                label="Comment"
+                                fullWidth
+                                value={answers[activeStep].comment}
+                                onChange={(e) => handleChange(activeStep, 'comment', e.target.value)}
+                                margin="normal"
+                                required
+                            />
+                        )}
+                        {mockQuestions[activeStep].requirePhoto && (
+                            <Button
+                                variant="contained"
+                                component="label"
+                                sx={{ mt: 2 }}
+                            >
+                                Upload Photo
+                                <input
+                                    type="file"
+                                    hidden
+                                    onChange={(e) => handleChange(activeStep, 'photo', e.target.files[0])}
+                                />
+                            </Button>
+                        )}
+                        {answers[activeStep].photo && <Typography>{answers[activeStep].photo.name}</Typography>}
+                    </Box>
+                )}
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+                <Button
+                    color="inherit"
+                    disabled={activeStep === 0 && !isReview}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                >
+                    Back
+                </Button>
+                <Box sx={{ flex: '1 1 auto' }} />
+                {!isReview && (
+                    <Button onClick={handleNext}>
+                        {activeStep === mockQuestions.length - 1 ? 'Review' : 'Next'}
+                    </Button>
+                )}
+            </Box>
+        </Box>
+    );
+};
+
+export default QuestionsStepper;
