@@ -35,20 +35,20 @@ const QuestionsStepper = ({ chatId }) => {
 
     const handleNext = () => {
         if (activeStep === mockQuestions.length - 1) {
-            const errors = validateAnswers(answers);
-            setValidationErrors(errors);
-            setIsReview(true);
+            setActiveStep(0);
         } else {
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
         }
     };
 
     const handleBack = () => {
-        if (isReview) {
-            setIsReview(false);
-        } else {
-            setActiveStep((prevActiveStep) => prevActiveStep - 1);
-        }
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
+
+    const handleReview = () => {
+        const errors = validateAnswers(answers);
+        setValidationErrors(errors);
+        setIsReview(true);
     };
 
     const handleSave = () => {
@@ -141,24 +141,33 @@ const QuestionsStepper = ({ chatId }) => {
                     </Box>
                 )}
             </Box>
-            <MobileStepper
-                variant="text"
-                steps={maxSteps}
-                position="static"
-                activeStep={activeStep}
-                nextButton={
-                    <Button size="small" onClick={handleNext}>
-                        {activeStep === maxSteps - 1 ? 'Review' : 'Next'}
-                        <KeyboardArrowRight />
+            {!isReview && (
+                <MobileStepper
+                    variant="text"
+                    steps={maxSteps}
+                    position="static"
+                    activeStep={activeStep}
+                    nextButton={
+                        <Button size="small" onClick={handleNext}>
+                            {activeStep === maxSteps - 1 ? 'First Step' : 'Next'}
+                            <KeyboardArrowRight />
+                        </Button>
+                    }
+                    backButton={
+                        <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+                            <KeyboardArrowLeft />
+                            Back
+                        </Button>
+                    }
+                />
+            )}
+            {!isReview && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Button variant="contained" color="primary" onClick={handleReview}>
+                        Review
                     </Button>
-                }
-                backButton={
-                    <Button size="small" onClick={handleBack} disabled={activeStep === 0 && !isReview}>
-                        <KeyboardArrowLeft />
-                        Back
-                    </Button>
-                }
-            />
+                </Box>
+            )}
         </Box>
     );
 };
