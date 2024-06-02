@@ -36,6 +36,8 @@ export const useQuestions = () => {
     const handleBack = () => {
         if (isReview) {
             setIsReview(false);
+        } else if (activeStep === 0) {
+            setActiveStep(mockQuestions.length - 1);
         } else {
             setActiveStep((prevActiveStep) => prevActiveStep - 1);
         }

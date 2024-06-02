@@ -20,7 +20,7 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
                 ))}
             </Box>
             <TextField
-                label="Comment"
+                label="Комментарий"
                 fullWidth
                 value={answer.comment}
                 onChange={(e) => handleChange(questionIndex, 'comment', e.target.value)}
@@ -32,7 +32,7 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
                 component="label"
                 sx={{ mt: 2 }}
             >
-                Upload Photo
+                Загрузить фото
                 <input
                     type="file"
                     hidden
@@ -47,12 +47,12 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
                     sx={{ mt: 2 }}
                     style={{ marginLeft: 8 }}
                 >
-                    Remove Photo
+                    Удалить фото
                 </Button>
             )}
             {answer.photo && (
                 <Box sx={{ mt: 2 }}>
-                    <Typography>Photo:</Typography>
+                    <Typography>Фото:</Typography>
                     <img src={URL.createObjectURL(answer.photo)} alt="Preview" style={{ maxHeight: '200px', maxWidth: '200px' }} />
                     
                 </Box>

@@ -24,7 +24,7 @@ const QuestionsStepper = ({ chatId }) => {
     return (
         <Box sx={{ width: '100%' }}>
             <Paper square elevation={0} sx={{ p: 2 }}>
-                <Typography variant="h6">{isReview ? "Review Your Answers" : `Question ${activeStep + 1}`}</Typography>
+                <Typography variant="h6">{isReview ? "Результаты заполнения чек-листа" : `Question ${activeStep + 1}`}</Typography>
             </Paper>
             <Box sx={{ p: 2 }}>
                 {isReview ? (
@@ -52,14 +52,16 @@ const QuestionsStepper = ({ chatId }) => {
                     activeStep={activeStep}
                     nextButton={
                         <Button size="small" onClick={handleNext}>
-                            {activeStep === maxSteps - 1 ? 'First Step' : 'Next'}
+                            Вперед
+                            {/* {activeStep === maxSteps - 1 ? 'Первый шаг' : 'Вперед'} */}
                             <KeyboardArrowRight />
                         </Button>
                     }
                     backButton={
-                        <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+                        <Button size="small" onClick={handleBack} /*disabled={activeStep === 0}*/>
                             <KeyboardArrowLeft />
-                            Back
+                            Назад
+                            {/* {activeStep === 0 ? 'Последний шаг' : 'Назад'} */}
                         </Button>
                     }
                 />
@@ -67,7 +69,7 @@ const QuestionsStepper = ({ chatId }) => {
             {!isReview && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Button variant="contained" color="primary" onClick={handleReview}>
-                        Review
+                        Завершить
                     </Button>
                 </Box>
             )}
