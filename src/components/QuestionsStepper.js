@@ -13,7 +13,7 @@ import { mockQuestions } from '../mocks/mockData';
 
 const QuestionsStepper = ({ chatId }) => {
     const [activeStep, setActiveStep] = useState(0);
-    const [answers, setAnswers] = useState(Array(mockQuestions.length).fill({ text: '', comment: '', photo: null }));
+    const [answers, setAnswers] = useState(mockQuestions.map(() => ({ text: '', comment: '', photo: null })));
     const [isReview, setIsReview] = useState(false);
 
     const handleNext = () => {
@@ -51,9 +51,11 @@ const QuestionsStepper = ({ chatId }) => {
     };
 
     const handleChange = (index, field, value) => {
-        const newAnswers = [...answers];
-        newAnswers[index][field] = value;
-        setAnswers(newAnswers);
+        setAnswers((prevAnswers) => {
+            const newAnswers = [...prevAnswers];
+            newAnswers[index][field] = value;
+            return newAnswers;
+        });
     };
 
     const handleEdit = (index) => {
