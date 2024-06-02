@@ -18,33 +18,8 @@ const QuestionsStepper = ({ chatId }) => {
     const [isReview, setIsReview] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
 
-    const handleNext = () => {
-        if (isReview) {
-            if (activeStep === mockQuestions.length - 1) {
-                setIsReview(true);
-            } else {
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            }
-        } else {
-            if (activeStep === mockQuestions.length - 1) {
-                setIsReview(true);
-            } else {
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            }
-        }
-    };
-
-    const handleBack = () => {
-        if (isReview) {
-            setIsReview(false);
-            setActiveStep(mockQuestions.length - 1); // Set to last question before review
-        } else {
-            setActiveStep((prevActiveStep) => prevActiveStep - 1);
-        }
-    };
-
-    const handleSave = () => {
-        const errors = answers.map((answer, index) => {
+    const validateAnswers = (answers) => {
+        return answers.map((answer, index) => {
             const question = mockQuestions[index];
             const isTextValid = answer.text.trim() !== '';
             const isCommentValid = !question.requireComment || answer.comment.trim() !== '';
@@ -56,16 +31,36 @@ const QuestionsStepper = ({ chatId }) => {
                 photo: !isPhotoValid
             };
         });
+    };
 
+    const handleNext = () => {
+        if (activeStep === mockQuestions.length - 1) {
+            const errors = validateAnswers(answers);
+            setValidationErrors(errors);
+            setIsReview(true);
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
+    };
+
+    const handleBack = () => {
+        if (isReview) {
+            setIsReview(false);
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        }
+    };
+
+    const handleSave = () => {
+        const errors = validateAnswers(answers);
+        setValidationErrors(errors);
         const hasErrors = errors.some(error => error.text || error.comment || error.photo);
 
         if (hasErrors) {
-            setValidationErrors(errors);
             alert('Please fill all the required fields.');
         } else {
             console.log('Saving answers:', answers);
             // Add API call to save answers here
-            setValidationErrors([]);
         }
     };
 
@@ -104,7 +99,7 @@ const QuestionsStepper = ({ chatId }) => {
                                 <Button onClick={() => handleEdit(index)}>Edit</Button>
                             </Box>
                         ))}
-                        <Button variant="contained" color="primary" onClick={handleSave}>
+                        <Button variant="contained" color="primary" onClick={handleSave} disabled={validationErrors.some(error => error.text || error.comment || error.photo)}>
                             Save All
                         </Button>
                     </Box>
@@ -152,8 +147,8 @@ const QuestionsStepper = ({ chatId }) => {
                 position="static"
                 activeStep={activeStep}
                 nextButton={
-                    <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1 && isReview}>
-                        {activeStep === maxSteps - 1 && !isReview ? 'Review' : 'Next'}
+                    <Button size="small" onClick={handleNext}>
+                        {activeStep === maxSteps - 1 ? 'Review' : 'Next'}
                         <KeyboardArrowRight />
                     </Button>
                 }
