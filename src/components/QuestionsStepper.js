@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import {
     Box,
     Button,
-    Step,
-    StepLabel,
-    Stepper,
     TextField,
     Typography,
-    Chip
+    Chip,
+    MobileStepper,
+    Paper
 } from '@mui/material';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { mockQuestions } from '../mocks/mockData';
 
 const QuestionsStepper = ({ chatId }) => {
@@ -33,7 +33,6 @@ const QuestionsStepper = ({ chatId }) => {
     };
 
     const handleSave = () => {
-        // Add validation here
         const allFieldsFilled = answers.every((answer, index) => {
             const question = mockQuestions[index];
             const isTextValid = answer.text.trim() !== '';
@@ -62,21 +61,16 @@ const QuestionsStepper = ({ chatId }) => {
         setIsReview(false);
     };
 
-    const steps = mockQuestions.map((question) => question.name);
+    const maxSteps = mockQuestions.length;
 
     return (
         <Box sx={{ width: '100%' }}>
-            <Stepper activeStep={activeStep}>
-                {steps.map((label, index) => (
-                    <Step key={index}>
-                        <StepLabel>{label}</StepLabel>
-                    </Step>
-                ))}
-            </Stepper>
-            <Box sx={{ mt: 2, mb: 1 }}>
+            <Paper square elevation={0} sx={{ p: 2 }}>
+                <Typography variant="h6">{isReview ? "Review Your Answers" : mockQuestions[activeStep].name}</Typography>
+            </Paper>
+            <Box sx={{ p: 2 }}>
                 {isReview ? (
                     <Box>
-                        <Typography variant="h5">Review Your Answers</Typography>
                         {answers.map((answer, index) => (
                             <Box key={index} sx={{ mb: 2 }}>
                                 <Typography variant="h6">{mockQuestions[index].name}</Typography>
@@ -92,7 +86,6 @@ const QuestionsStepper = ({ chatId }) => {
                     </Box>
                 ) : (
                     <Box>
-                        <Typography variant="h6">{mockQuestions[activeStep].name}</Typography>
                         <Box>
                             {mockQuestions[activeStep].options.map((option, index) => (
                                 <Chip
@@ -105,50 +98,48 @@ const QuestionsStepper = ({ chatId }) => {
                                 />
                             ))}
                         </Box>
-                        {mockQuestions[activeStep].requireComment && (
-                            <TextField
-                                label="Comment"
-                                fullWidth
-                                value={answers[activeStep].comment}
-                                onChange={(e) => handleChange(activeStep, 'comment', e.target.value)}
-                                margin="normal"
-                                required
+                        <TextField
+                            label="Comment"
+                            fullWidth
+                            value={answers[activeStep].comment}
+                            onChange={(e) => handleChange(activeStep, 'comment', e.target.value)}
+                            margin="normal"
+                            required={mockQuestions[activeStep].requireComment}
+                        />
+                        <Button
+                            variant="contained"
+                            component="label"
+                            sx={{ mt: 2 }}
+                        >
+                            Upload Photo
+                            <input
+                                type="file"
+                                hidden
+                                onChange={(e) => handleChange(activeStep, 'photo', e.target.files[0])}
                             />
-                        )}
-                        {mockQuestions[activeStep].requirePhoto && (
-                            <Button
-                                variant="contained"
-                                component="label"
-                                sx={{ mt: 2 }}
-                            >
-                                Upload Photo
-                                <input
-                                    type="file"
-                                    hidden
-                                    onChange={(e) => handleChange(activeStep, 'photo', e.target.files[0])}
-                                />
-                            </Button>
-                        )}
+                        </Button>
                         {answers[activeStep].photo && <Typography>{answers[activeStep].photo.name}</Typography>}
                     </Box>
                 )}
             </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                <Button
-                    color="inherit"
-                    disabled={activeStep === 0 && !isReview}
-                    onClick={handleBack}
-                    sx={{ mr: 1 }}
-                >
-                    Back
-                </Button>
-                <Box sx={{ flex: '1 1 auto' }} />
-                {!isReview && (
-                    <Button onClick={handleNext}>
-                        {activeStep === mockQuestions.length - 1 ? 'Review' : 'Next'}
+            <MobileStepper
+                variant="text"
+                steps={maxSteps}
+                position="static"
+                activeStep={activeStep}
+                nextButton={
+                    <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1 && !isReview}>
+                        {activeStep === maxSteps - 1 ? 'Review' : 'Next'}
+                        <KeyboardArrowRight />
                     </Button>
-                )}
-            </Box>
+                }
+                backButton={
+                    <Button size="small" onClick={handleBack} disabled={activeStep === 0 && !isReview}>
+                        <KeyboardArrowLeft />
+                        Back
+                    </Button>
+                }
+            />
         </Box>
     );
 };
