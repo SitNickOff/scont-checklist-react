@@ -34,7 +34,10 @@ const QuestionsStepper = ({ chatId }) => {
     };
 
     const handleNext = () => {
-        if (activeStep === mockQuestions.length - 1) {
+        if (isReview) {
+            setIsReview(false);
+            setActiveStep(0);
+        } else if (activeStep === mockQuestions.length - 1) {
             setActiveStep(0);
         } else {
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -42,7 +45,11 @@ const QuestionsStepper = ({ chatId }) => {
     };
 
     const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        if (isReview) {
+            setIsReview(false);
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        }
     };
 
     const handleReview = () => {
@@ -77,6 +84,14 @@ const QuestionsStepper = ({ chatId }) => {
         setIsReview(false);
     };
 
+    const handleRemovePhoto = (index) => {
+        setAnswers((prevAnswers) => {
+            const newAnswers = [...prevAnswers];
+            newAnswers[index].photo = null;
+            return newAnswers;
+        });
+    };
+
     const maxSteps = mockQuestions.length;
 
     return (
@@ -92,9 +107,14 @@ const QuestionsStepper = ({ chatId }) => {
                                 <Typography variant="h6">{mockQuestions[index].name}</Typography>
                                 <Typography>Answer: {answer.text}</Typography>
                                 {validationErrors[index]?.text && <Alert severity="error">Answer is required</Alert>}
-                                <Typography>Comment: {answer.comment}</Typography>
+                                {answer.comment && <Typography>Comment: {answer.comment}</Typography>}
                                 {validationErrors[index]?.comment && <Alert severity="error">Comment is required</Alert>}
-                                {answer.photo && <Typography>Photo: {answer.photo.name}</Typography>}
+                                {answer.photo && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography>Photo:</Typography>
+                                        <img src={URL.createObjectURL(answer.photo)} alt="Preview" style={{ maxHeight: '200px', maxWidth: '200px' }} />
+                                    </Box>
+                                )}
                                 {validationErrors[index]?.photo && <Alert severity="error">Photo is required</Alert>}
                                 <Button onClick={() => handleEdit(index)}>Edit</Button>
                             </Box>
@@ -137,7 +157,23 @@ const QuestionsStepper = ({ chatId }) => {
                                 onChange={(e) => handleChange(activeStep, 'photo', e.target.files[0])}
                             />
                         </Button>
-                        {answers[activeStep].photo && <Typography>{answers[activeStep].photo.name}</Typography>}
+                        {answers[activeStep].photo && (
+                            <Button 
+                                variant="contained" 
+                                component="label"
+                                sx={{ mt: 2 }} 
+                                onClick={() => handleRemovePhoto(activeStep)}
+                                style={{marginLeft: 8}}
+                            >
+                                Remove Photo
+                            </Button>
+                        )}
+                        {answers[activeStep].photo && (
+                            <Box sx={{ mt: 2 }}>
+                                <Typography>Photo:</Typography>
+                                <img src={URL.createObjectURL(answers[activeStep].photo)} alt="Preview" style={{ maxHeight: '200px', maxWidth: '200px' }} />
+                            </Box>
+                        )}
                     </Box>
                 )}
             </Box>
