@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, Chip, TextField, Typography, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { mockQuestions } from '../mocks/mockData';
 
 const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, handleRemovePhoto }) => {
@@ -13,6 +14,19 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
 
     return (
         <Box>
+            <Typography 
+                variant="h5"
+                sx={{ 
+                    color: 'inherit',//question.requirePhoto ? 'red' : 'inherit'
+                    marginBottom: 4
+                }}
+            >
+                {`${question.text}`}
+                {question.requirePhoto && 
+                    <PhotoCameraIcon sx={{ margin: '0 0 10px 4px' , color: 'red', width: 16, height: 16}} />
+                }
+            </Typography>
+            
             <Box>
                 {question.options.map((option, index) => (
                     <Chip

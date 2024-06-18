@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, Typography, Alert, Card, CardContent, CardActions } from '@mui/material';
+import { mockQuestions } from '../mocks/mockData';
 
 const Review = ({ answers, validationErrors, handleEdit, handleSave }) => {
     return (
@@ -7,8 +8,8 @@ const Review = ({ answers, validationErrors, handleEdit, handleSave }) => {
             {answers.map((answer, index) => (
                 <Card key={index} sx={{ mb: 2 }}>
                     <CardContent>
-                        <Typography variant="h5">{`Question ${index + 1}`}</Typography>
-                        {answer.comment && (<Typography>Ответ: {answer.text}</Typography>)}
+                        <Typography variant="h5">{`Вопрос ${index + 1}: ${mockQuestions[index].text}`}</Typography>
+                        {answer.text && (<Typography>Ответ: {answer.text}</Typography>)}
                         {validationErrors[index]?.text && <Alert severity="error">Требуется ответ</Alert>}
                         {answer.comment && (<Typography>Комментарий: {answer.comment}</Typography>)}
                         {validationErrors[index]?.comment && <Alert severity="error">Требуется комментарий</Alert>}

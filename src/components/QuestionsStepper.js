@@ -24,7 +24,7 @@ const QuestionsStepper = ({ chatId }) => {
     return (
         <Box sx={{ width: '100%' }}>
             <Paper square elevation={0} sx={{ p: 2 }}>
-                <Typography variant="h6">{isReview ? "Результаты заполнения чек-листа" : `Question ${activeStep + 1}`}</Typography>
+                <Typography variant="h6">{isReview ? "Результаты заполнения чек-листа" : `Вопрос ${activeStep + 1}`}</Typography>
             </Paper>
             <Box sx={{ p: 2 }}>
                 {isReview ? (
