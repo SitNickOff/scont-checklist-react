@@ -1,9 +1,15 @@
 import React from 'react';
-import { Box, Button, Chip, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, TextField, Typography, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { mockQuestions } from '../mocks/mockData';
 
 const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, handleRemovePhoto }) => {
     const question = mockQuestions[questionIndex];
+
+    const handleFilesChange = (event) => {
+        const files = Array.from(event.target.files);
+        handleChange(questionIndex, 'photos', [...answer.photos, ...files]);
+    };
 
     return (
         <Box>
@@ -36,25 +42,37 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
                 <input
                     type="file"
                     hidden
-                    onChange={(e) => handleChange(questionIndex, 'photo', e.target.files[0])}
+                    multiple
+                    onChange={handleFilesChange}
                 />
             </Button>
-            {answer.photo && (
-                <Button
-                    variant="contained"
-                    // color="secondary"
-                    onClick={() => handleRemovePhoto(questionIndex)}
-                    sx={{ mt: 2 }}
-                    style={{ marginLeft: 8 }}
-                >
-                    Удалить фото
-                </Button>
-            )}
-            {answer.photo && (
+            {answer.photos && answer.photos.length>0 && (
                 <Box sx={{ mt: 2 }}>
                     <Typography>Фото:</Typography>
-                    <img src={URL.createObjectURL(answer.photo)} alt="Preview" style={{ maxHeight: '200px', maxWidth: '200px' }} />
-                    
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                        {answer.photos.map((photo, index) => (
+                            <Box key={index} sx={{ position: 'relative', m: 1 }}>
+                                <img 
+                                    src={URL.createObjectURL(photo)} 
+                                    alt="Preview" 
+                                    style={{ maxHeight: '200px', maxWidth: '200px' }} 
+                                />
+                                <IconButton 
+                                    variant='contained'
+                                    color='secondary'
+                                    sx={{ 
+                                        position: 'absolute', 
+                                        top: 0, 
+                                        right: 0, 
+                                        color: 'red' 
+                                    }}
+                                    onClick={() => handleRemovePhoto(questionIndex, index)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
+                        ))}
+                    </Box>
                 </Box>
             )}
         </Box>

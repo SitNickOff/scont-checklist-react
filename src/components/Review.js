@@ -12,13 +12,24 @@ const Review = ({ answers, validationErrors, handleEdit, handleSave }) => {
                         {validationErrors[index]?.text && <Alert severity="error">Требуется ответ</Alert>}
                         {answer.comment && (<Typography>Комментарий: {answer.comment}</Typography>)}
                         {validationErrors[index]?.comment && <Alert severity="error">Требуется комментарий</Alert>}
-                        {answer.photo && (
+                        {answer.photos && answer.photos.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <Typography>Фото:</Typography>
-                                <img src={URL.createObjectURL(answer.photo)} alt="Preview" style={{ maxHeight: '200px', maxWidth: '200px' }} />
+                                <Box sx= {{display: 'flex', flexWrap: 'wrap' }}>
+                                    {answer.photos.map((photo, i) => (
+                                        <Box key={i} sx={{ position: 'relative', m: 1 }}>
+                                            <img 
+                                                src={URL.createObjectURL(photo)} 
+                                                alt="Preview" 
+                                                style={{ maxHeight: '200px', maxWidth: '200px' }} 
+                                            />
+                                        </Box>
+                                    ))}
+                                </Box>
+                                
                             </Box>
                         )}
-                        {validationErrors[index]?.photo && <Alert severity="error">Photo is required</Alert>}
+                        {validationErrors[index]?.photo && <Alert severity="error">Требуется фото</Alert>}
                     </CardContent>
                     <CardActions>
                         <Button onClick={() => handleEdit(index)}>Редактировать</Button>

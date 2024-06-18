@@ -3,7 +3,7 @@ import { mockQuestions } from '../mocks/mockData';
 
 export const useQuestions = () => {
     const [activeStep, setActiveStep] = useState(0);
-    const [answers, setAnswers] = useState(mockQuestions.map(() => ({ text: '', comment: '', photo: null })));
+    const [answers, setAnswers] = useState(mockQuestions.map(() => ({ text: '', comment: '', photos: [] })));
     const [isReview, setIsReview] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
 
@@ -12,7 +12,7 @@ export const useQuestions = () => {
             const question = mockQuestions[index];
             const isTextValid = answer.text.trim() !== '';
             const isCommentValid = !question.requireComment || answer.comment.trim() !== '';
-            const isPhotoValid = !question.requirePhoto || answer.photo !== null;
+            const isPhotoValid = !question.requirePhoto || answer.photos.length > 0;
 
             return {
                 text: !isTextValid,
@@ -75,10 +75,10 @@ export const useQuestions = () => {
         setIsReview(false);
     };
 
-    const handleRemovePhoto = (index) => {
+    const handleRemovePhoto = (index, photoIndex) => {
         setAnswers((prevAnswers) => {
             const newAnswers = [...prevAnswers];
-            newAnswers[index].photo = null;
+            newAnswers[index].photos = newAnswers[index].photos.filter((_, i) => i !== photoIndex);
             return newAnswers;
         });
     };
