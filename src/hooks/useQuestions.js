@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { mockQuestions } from '../mocks/mockData';
+// import { mockQuestions } from '../mocks/mockData';
 
 export const useQuestions = () => {
+    const [questions, setQuestions] = useState([]);
     const [activeStep, setActiveStep] = useState(0);
-    const [answers, setAnswers] = useState(mockQuestions.map(() => ({ text: '', comment: '', photos: [] })));
+    const [answers, setAnswers] = useState([]);
     const [isReview, setIsReview] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
+    const [maxSteps, setMaxSteps] = useState(0);
 
     const validateAnswers = (answers) => {
         return answers.map((answer, index) => {
-            const question = mockQuestions[index];
+            const question = questions[index];
             const isTextValid = answer.text.trim() !== '';
             const isCommentValid = !question.requireComment || answer.comment.trim() !== '';
             const isPhotoValid = !question.requirePhoto || answer.photos.length > 0;
@@ -26,7 +28,7 @@ export const useQuestions = () => {
         if (isReview) {
             setIsReview(false);
             setActiveStep(0);
-        } else if (activeStep === mockQuestions.length - 1) {
+        } else if (activeStep === questions.length - 1) {
             setActiveStep(0);
         } else {
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -37,7 +39,7 @@ export const useQuestions = () => {
         if (isReview) {
             setIsReview(false);
         } else if (activeStep === 0) {
-            setActiveStep(mockQuestions.length - 1);
+            setActiveStep(questions.length - 1);
         } else {
             setActiveStep((prevActiveStep) => prevActiveStep - 1);
         }
@@ -83,9 +85,12 @@ export const useQuestions = () => {
         });
     };
 
-    const maxSteps = mockQuestions.length;
+    // const maxSteps = mockQuestions.length;
 
     return {
+        setAnswers,
+        questions,
+        setQuestions,
         activeStep,
         answers,
         isReview,
@@ -97,6 +102,7 @@ export const useQuestions = () => {
         handleChange,
         handleEdit,
         handleRemovePhoto,
-        maxSteps
+        maxSteps,
+        setMaxSteps
     };
 };

@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box, Button, Typography, Alert, Card, CardContent, CardActions } from '@mui/material';
-import { mockQuestions } from '../mocks/mockData';
+// import { mockQuestions } from '../mocks/mockData';
 
-const Review = ({ answers, validationErrors, handleEdit, handleSave }) => {
+const Review = ({ answers, validationErrors, handleEdit, handleSave, questions }) => {
     return (
         <Box>
             {answers.map((answer, index) => (
                 <Card key={index} sx={{ mb: 2 }}>
                     <CardContent>
-                        <Typography variant="h5">{`Вопрос ${index + 1}: ${mockQuestions[index].text}`}</Typography>
+                        <Typography variant="h5">{`Вопрос ${index + 1}: ${questions[index].text}`}</Typography>
                         {answer.text && (<Typography>Ответ: {answer.text}</Typography>)}
                         {validationErrors[index]?.text && <Alert severity="error">Требуется ответ</Alert>}
                         {answer.comment && (<Typography>Комментарий: {answer.comment}</Typography>)}

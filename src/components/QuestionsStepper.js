@@ -1,13 +1,26 @@
-import React from 'react';
-import { Box, Button, MobileStepper, Paper, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+
+import { Box, Button, CircularProgress, MobileStepper, Paper, Typography } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
+
+import { useQuestions } from '../hooks/useQuestions';
+import { getQuestions } from '../api';
+
 import QuestionForm from './QuestionForm';
 import Review from './Review';
-import { useQuestions } from '../hooks/useQuestions';
 
 const QuestionsStepper = ({ chatId }) => {
+    // const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const checklistId = new URLSearchParams(location.search).get('checklistId');
+
     const {
+        questions,
+        setQuestions,
         activeStep,
+        setAnswers,
         answers,
         isReview,
         validationErrors,
@@ -18,8 +31,38 @@ const QuestionsStepper = ({ chatId }) => {
         handleChange,
         handleEdit,
         handleRemovePhoto,
-        maxSteps
+        maxSteps,
+        setMaxSteps
     } = useQuestions();
+
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const data = await getQuestions(checklistId);
+                setQuestions(data.map((i, index) => ({
+                    id: index+1,
+                    name: `Вопрос ${index+1}`,
+                    text: i.yardstick_name_for_report,
+                    options: [...i.scores],
+                    requireComment: i.req_comments,
+                    requirePhoto: i.req_files,
+                    // ...i
+                })));
+                setAnswers(data.map(() => ({ text: '', comment: '', photos: [] })));
+                setMaxSteps(data.length);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching questions:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchQuestions();
+    }, [checklistId, chatId, setAnswers, setMaxSteps, setQuestions]);
+
+    if (loading) {
+        return <CircularProgress />;
+    }
 
     return (
         <Box sx={{ width: '100%' }}>
@@ -30,6 +73,7 @@ const QuestionsStepper = ({ chatId }) => {
                 {isReview ? (
                     <Review
                         answers={answers}
+                        questions={questions}
                         validationErrors={validationErrors}
                         handleEdit={handleEdit}
                         handleSave={handleSave}
@@ -37,6 +81,7 @@ const QuestionsStepper = ({ chatId }) => {
                 ) : (
                     <QuestionForm
                         questionIndex={activeStep}
+                        question={questions[activeStep]}
                         answer={answers[activeStep]}
                         validationErrors={validationErrors[activeStep]}
                         handleChange={handleChange}
