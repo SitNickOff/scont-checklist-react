@@ -2,10 +2,8 @@ import React from 'react';
 import { Box, Button, Chip, TextField, Typography, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-// import { mockQuestions } from '../mocks/mockData';
 
 const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, handleRemovePhoto, question }) => {
-    // const question = mockQuestions[questionIndex];
 
     const handleFilesChange = (event) => {
         const files = Array.from(event.target.files);
@@ -17,7 +15,7 @@ const QuestionForm = ({ questionIndex, answer, validationErrors, handleChange, h
             <Typography 
                 variant="h5"
                 sx={{ 
-                    color: 'inherit',//question.requirePhoto ? 'red' : 'inherit'
+                    color: 'inherit',
                     marginBottom: 4
                 }}
             >

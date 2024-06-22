@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-// import { mockChecklists } from '../mocks/mockData';
 import { getChecklists } from '../api';
 
 const ChecklistList = ({ chatId }) => {
@@ -10,11 +9,6 @@ const ChecklistList = ({ chatId }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const objectId = new URLSearchParams(location.search).get('objectId');
-
-    // useEffect(() => {
-    //     // Use mock data initially
-    //     setChecklists(mockChecklists);
-    // }, [chatId]);
 
     useEffect(() => {
         const fetchChecklists = async () => {

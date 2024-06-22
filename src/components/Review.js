@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, Typography, Alert, Card, CardContent, CardActions } from '@mui/material';
-// import { mockQuestions } from '../mocks/mockData';
 
 const Review = ({ answers, validationErrors, handleEdit, handleSave, questions }) => {
     return (

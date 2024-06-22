@@ -1,5 +1,4 @@
 import { useState } from 'react';
-// import { mockQuestions } from '../mocks/mockData';
 
 export const useQuestions = () => {
     const [questions, setQuestions] = useState([]);
@@ -60,7 +59,6 @@ export const useQuestions = () => {
             alert('Please fill all the required fields.');
         } else {
             console.log('Saving answers:', answers);
-            // Add API call to save answers here
         }
     };
 
@@ -84,8 +82,6 @@ export const useQuestions = () => {
             return newAnswers;
         });
     };
-
-    // const maxSteps = mockQuestions.length;
 
     return {
         setAnswers,

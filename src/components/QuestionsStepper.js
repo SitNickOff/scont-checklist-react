@@ -11,7 +11,6 @@ import QuestionForm from './QuestionForm';
 import Review from './Review';
 
 const QuestionsStepper = ({ chatId }) => {
-    // const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const location = useLocation();
     const checklistId = new URLSearchParams(location.search).get('checklistId');

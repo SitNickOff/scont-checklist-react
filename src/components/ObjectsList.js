@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-// import { mockObjects } from '../mocks/mockData';
 import { getObjects } from '../api';
 
 const ObjectsList = ({ chatId }) => {
