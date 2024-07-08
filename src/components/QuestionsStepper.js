@@ -1,16 +1,14 @@
+// src/components/QuestionsStepper.js
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
 import { Box, Button, CircularProgress, MobileStepper, Paper, Typography } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-
 import { useQuestions } from '../hooks/useQuestions';
 import { getQuestions } from '../api';
-
 import QuestionForm from './QuestionForm';
 import Review from './Review';
 
-const QuestionsStepper = ({ chatId }) => {
+const QuestionsStepper = ({ chatId, token }) => {
     const [loading, setLoading] = useState(true);
     const location = useLocation();
     const checklistId = new URLSearchParams(location.search).get('checklistId');
@@ -37,15 +35,14 @@ const QuestionsStepper = ({ chatId }) => {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const data = await getQuestions(checklistId);
+                const data = await getQuestions(token, chatId, checklistId);
                 setQuestions(data.map((i, index) => ({
-                    id: index+1,
-                    name: `Вопрос ${index+1}`,
+                    id: index + 1,
+                    name: `Вопрос ${index + 1}`,
                     text: i.yardstick_name_for_report,
                     options: [...i.scores],
                     requireComment: i.req_comments,
                     requirePhoto: i.req_files,
-                    // ...i
                 })));
                 setAnswers(data.map(() => ({ text: '', comment: '', photos: [] })));
                 setMaxSteps(data.length);
@@ -57,7 +54,7 @@ const QuestionsStepper = ({ chatId }) => {
         };
 
         fetchQuestions();
-    }, [checklistId, chatId, setAnswers, setMaxSteps, setQuestions]);
+    }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions]);
 
     if (loading) {
         return <CircularProgress />;
@@ -97,15 +94,13 @@ const QuestionsStepper = ({ chatId }) => {
                     nextButton={
                         <Button size="small" onClick={handleNext}>
                             Вперед
-                            {/* {activeStep === maxSteps - 1 ? 'Первый шаг' : 'Вперед'} */}
                             <KeyboardArrowRight />
                         </Button>
                     }
                     backButton={
-                        <Button size="small" onClick={handleBack} /*disabled={activeStep === 0}*/>
+                        <Button size="small" onClick={handleBack}>
                             <KeyboardArrowLeft />
                             Назад
-                            {/* {activeStep === 0 ? 'Последний шаг' : 'Назад'} */}
                         </Button>
                     }
                 />

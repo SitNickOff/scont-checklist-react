@@ -1,9 +1,10 @@
+// src/components/ObjectsList.js
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getObjects } from '../api';
 
-const ObjectsList = ({ chatId }) => {
+const ObjectsList = ({ chatId, token }) => {
     const [objects, setObjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -11,7 +12,7 @@ const ObjectsList = ({ chatId }) => {
     useEffect(() => {
         const fetchObjects = async () => {
             try {
-                const data = await getObjects();
+                const data = await getObjects(token, chatId);
                 setObjects(data);
                 setLoading(false);
             } catch (error) {
@@ -21,7 +22,7 @@ const ObjectsList = ({ chatId }) => {
         };
 
         fetchObjects();
-    }, [chatId]);
+    }, [chatId, token]);
 
     const handleSelectObject = (objectId) => {
         navigate(`/checklists?objectId=${objectId}`);

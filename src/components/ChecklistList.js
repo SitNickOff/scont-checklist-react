@@ -1,9 +1,10 @@
+// src/components/ChecklistList.js
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getChecklists } from '../api';
 
-const ChecklistList = ({ chatId }) => {
+const ChecklistList = ({ chatId, token }) => {
     const [checklists, setChecklists] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ const ChecklistList = ({ chatId }) => {
     useEffect(() => {
         const fetchChecklists = async () => {
             try {
-                const data = await getChecklists(objectId);
+                const data = await getChecklists(token, chatId, objectId);
                 setChecklists(data);
                 setLoading(false);
             } catch (error) {
@@ -23,7 +24,7 @@ const ChecklistList = ({ chatId }) => {
         };
 
         fetchChecklists();
-    }, [objectId, chatId]);
+    }, [objectId, chatId, token]);
 
     const handleSelectChecklist = (checklistId) => {
         navigate(`/questions?checklistId=${checklistId}`);
