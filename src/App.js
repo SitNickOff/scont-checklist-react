@@ -1,9 +1,29 @@
 // src/App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import ObjectsList from './components/ObjectsList';
 import ChecklistList from './components/ChecklistList';
 import QuestionsStepper from './components/QuestionsStepper';
+import ThemeProvider, { useTheme } from './ThemeContext';
+import { lightTheme, darkTheme } from './themes';
+
+const AppContent = ({ chatId, token }) => {
+    const theme = useTheme();
+
+    return (
+        <MuiThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
+            <Router>
+                <Routes>
+                    <Route path="/objects" element={<ObjectsList chatId={chatId} token={token} />} />
+                    <Route path="/checklists" element={<ChecklistList chatId={chatId} token={token} />} />
+                    <Route path="/questions" element={<QuestionsStepper chatId={chatId} token={token} />} />
+                    <Route path="*" element={<Navigate to="/objects" />} />
+                </Routes>
+            </Router>
+        </MuiThemeProvider>
+    );
+};
 
 const App = () => {
     const [chatId, setChatId] = useState(null);
@@ -18,26 +38,17 @@ const App = () => {
             setChatId(chatIdParam);
             setToken(tokenParam);
             setIsAuthorized(true);
-        } else {
-            console.error("Missing chat_id or token");
         }
     }, []);
 
     return (
-        <Router>
-            <Routes>
-                {isAuthorized ? (
-                    <>
-                        <Route path="/objects" element={<ObjectsList chatId={chatId} token={token} />} />
-                        <Route path="/checklists" element={<ChecklistList chatId={chatId} token={token} />} />
-                        <Route path="/questions" element={<QuestionsStepper chatId={chatId} token={token} />} />
-                        <Route path="*" element={<Navigate to="/objects" />} />
-                    </>
-                ) : (
-                    <Route path="*" element={<div>Loading...</div>} />
-                )}
-            </Routes>
-        </Router>
+        <ThemeProvider>
+            {isAuthorized ? (
+                <AppContent chatId={chatId} token={token} />
+            ) : (
+                <div>Loading...</div>
+            )}
+        </ThemeProvider>
     );
 };
 

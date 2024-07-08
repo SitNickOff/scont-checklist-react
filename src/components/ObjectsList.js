@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getObjects } from '../api';
+import { useTheme } from '../ThemeContext';
 
 const ObjectsList = ({ chatId, token }) => {
     const [objects, setObjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const theme = useTheme();
 
     useEffect(() => {
         const fetchObjects = async () => {
@@ -34,13 +36,13 @@ const ObjectsList = ({ chatId, token }) => {
 
     return (
         <Container>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" gutterBottom style={{ color: theme === 'dark' ? '#fff' : '#000' }}>
                 Objects List
             </Typography>
             <List>
                 {objects.map((obj, index) => (
                     <ListItem button key={index} onClick={() => handleSelectObject(obj.uid)}>
-                        <ListItemText primary={obj.name} />
+                        <ListItemText primary={obj.name} style={{ color: theme === 'dark' ? '#fff' : '#000' }} />
                     </ListItem>
                 ))}
             </List>
