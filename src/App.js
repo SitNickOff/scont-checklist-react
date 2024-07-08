@@ -11,11 +11,15 @@ const App = () => {
     const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
-        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-        if (initDataUnsafe) {
-            setChatId(initDataUnsafe.user.id);
-            setToken(initDataUnsafe.query_id); // Используйте query_id в качестве токена
+        const params = new URLSearchParams(window.location.search);
+        const chatIdParam = params.get('chat_id');
+        const tokenParam = params.get('token');
+        if (chatIdParam && tokenParam) {
+            setChatId(chatIdParam);
+            setToken(tokenParam);
             setIsAuthorized(true);
+        } else {
+            console.error("Missing chat_id or token");
         }
     }, []);
 
