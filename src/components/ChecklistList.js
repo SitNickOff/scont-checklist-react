@@ -42,7 +42,11 @@ const ChecklistList = ({ chatId, token }) => {
             <List>
                 {checklists.map((checklist, index) => (
                     <ListItem button key={index} onClick={() => handleSelectChecklist(checklist.model_id)}>
-                        <ListItemText primary={checklist.description} />
+                        <ListItemText primary={
+                            checklist.description 
+                                ? checklist.description 
+                                : `Чек-лист: ${checklist.model_id}`
+                        } />
                     </ListItem>
                 ))}
             </List>
