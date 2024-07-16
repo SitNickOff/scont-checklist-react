@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 export const useQuestions = () => {
     const [questions, setQuestions] = useState([]);
@@ -50,7 +51,7 @@ export const useQuestions = () => {
         setIsReview(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async (chatId, token) => {
         const errors = validateAnswers(answers);
         setValidationErrors(errors);
         const hasErrors = errors.some(error => error.text || error.comment || error.photo);
@@ -58,7 +59,18 @@ export const useQuestions = () => {
         if (hasErrors) {
             alert('Please fill all the required fields.');
         } else {
-            console.log('Saving answers:', answers);
+            try {
+                const response = await axios.post('https://server.salescontrol.kz/api/questions/done', {
+                    token,
+                    chat_id: chatId,
+                    answers
+                });
+                console.log('Response:', response.data);
+                alert('Answers successfully submitted!');
+            } catch (error) {
+                console.error('Error submitting answers:', error);
+                alert('Failed to submit answers. Please try again.');
+            }
         }
     };
 

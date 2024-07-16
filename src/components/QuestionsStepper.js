@@ -1,4 +1,3 @@
-// src/components/QuestionsStepper.js
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, Button, CircularProgress, MobileStepper, Paper, Typography } from '@mui/material';
@@ -72,7 +71,7 @@ const QuestionsStepper = ({ chatId, token }) => {
                         questions={questions}
                         validationErrors={validationErrors}
                         handleEdit={handleEdit}
-                        handleSave={handleSave}
+                        handleSave={() => handleSave(chatId, token)}
                     />
                 ) : (
                     <QuestionForm
