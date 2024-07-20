@@ -15,7 +15,7 @@ const Review = ({ answers, validationErrors, handleEdit, handleSave, questions }
                         {answer.photos && answer.photos.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <Typography>Фото:</Typography>
-                                <Box sx= {{display: 'flex', flexWrap: 'wrap' }}>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                                     {answer.photos.map((photo, i) => (
                                         <Box key={i} sx={{ position: 'relative', m: 1 }}>
                                             <img 
@@ -26,7 +26,6 @@ const Review = ({ answers, validationErrors, handleEdit, handleSave, questions }
                                         </Box>
                                     ))}
                                 </Box>
-                                
                             </Box>
                         )}
                         {validationErrors[index]?.photo && <Alert severity="error">Требуется фото</Alert>}

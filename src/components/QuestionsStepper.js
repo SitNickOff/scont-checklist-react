@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Box, Button, CircularProgress, MobileStepper, Paper, Typography } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { useQuestions } from '../hooks/useQuestions';
@@ -7,10 +7,9 @@ import { getQuestions } from '../api';
 import QuestionForm from './QuestionForm';
 import Review from './Review';
 
-const QuestionsStepper = ({ chatId, token }) => {
+const QuestionsStepper = () => {
     const [loading, setLoading] = useState(true);
-    const location = useLocation();
-    const checklistId = new URLSearchParams(location.search).get('checklistId');
+    const { chatId, token, objectId, checklistId } = useSelector((state) => state.app);
 
     const {
         questions,
@@ -71,7 +70,7 @@ const QuestionsStepper = ({ chatId, token }) => {
                         questions={questions}
                         validationErrors={validationErrors}
                         handleEdit={handleEdit}
-                        handleSave={() => handleSave(chatId, token)}
+                        handleSave={() => handleSave(chatId, token, objectId, checklistId)}
                     />
                 ) : (
                     <QuestionForm

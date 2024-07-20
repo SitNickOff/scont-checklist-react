@@ -1,15 +1,17 @@
 // src/components/ChecklistList.js
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setChecklistId } from '../store';
 import { getChecklists } from '../api';
 
-const ChecklistList = ({ chatId, token }) => {
+const ChecklistList = () => {
     const [checklists, setChecklists] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const location = useLocation();
-    const objectId = new URLSearchParams(location.search).get('objectId');
+    const dispatch = useDispatch();
+    const { chatId, token, objectId } = useSelector((state) => state.app);
 
     useEffect(() => {
         const fetchChecklists = async () => {
@@ -27,7 +29,8 @@ const ChecklistList = ({ chatId, token }) => {
     }, [objectId, chatId, token]);
 
     const handleSelectChecklist = (checklistId) => {
-        navigate(`/questions?checklistId=${checklistId}`);
+        dispatch(setChecklistId(checklistId));
+        navigate(`/questions`);
     };
 
     if (loading) {

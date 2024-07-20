@@ -51,7 +51,7 @@ export const useQuestions = () => {
         setIsReview(true);
     };
 
-    const handleSave = async (chatId, token) => {
+    const handleSave = async (chatId, token, selectedUnit, selectedModel) => {
         const errors = validateAnswers(answers);
         setValidationErrors(errors);
         const hasErrors = errors.some(error => error.text || error.comment || error.photo);
@@ -63,6 +63,8 @@ export const useQuestions = () => {
                 const response = await axios.post('https://server.salescontrol.kz/api/questions/done', {
                     token,
                     chat_id: chatId,
+                    selected_unit: selectedUnit,
+                    selected_model: selectedModel,
                     answers
                 });
                 console.log('Response:', response.data);

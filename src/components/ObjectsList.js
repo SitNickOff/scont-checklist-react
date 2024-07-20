@@ -1,13 +1,16 @@
-// src/components/ObjectsList.js
 import React, { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText, Typography, Container, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setObjectId } from '../store';
 import { getObjects } from '../api';
 
-const ObjectsList = ({ chatId, token }) => {
+const ObjectsList = () => {
   const [objects, setObjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { chatId, token } = useSelector((state) => state.app);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -25,7 +28,8 @@ const ObjectsList = ({ chatId, token }) => {
   }, [chatId, token]);
 
   const handleSelectObject = (objectId) => {
-    navigate(`/checklists?objectId=${objectId}`);
+    dispatch(setObjectId(objectId));
+    navigate(`/checklists`);
   };
 
   if (loading) {
