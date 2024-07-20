@@ -34,15 +34,16 @@ const QuestionsStepper = () => {
         const fetchQuestions = async () => {
             try {
                 const data = await getQuestions(token, chatId, checklistId);
+
                 setQuestions(data.map((i, index) => ({
-                    id: index + 1,
+                    id: i.yardstick,
                     name: `Вопрос ${index + 1}`,
                     text: i.yardstick_name_for_report,
                     options: [...i.scores],
                     requireComment: i.req_comments,
                     requirePhoto: i.req_files,
                 })));
-                setAnswers(data.map(() => ({ text: '', comment: '', photos: [] })));
+                setAnswers(data.map((i) => ({ text: '', comment: '', photos: [], questionId: i.yardstick })));
                 setMaxSteps(data.length);
                 setLoading(false);
             } catch (error) {
