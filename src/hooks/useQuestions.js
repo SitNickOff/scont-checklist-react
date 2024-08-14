@@ -51,6 +51,15 @@ export const useQuestions = () => {
         setIsReview(true);
     };
 
+    const convertFileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    };
+
     const handleSave = async (chatId, token, selectedUnit, selectedModel) => {
         const errors = validateAnswers(answers);
         setValidationErrors(errors);
@@ -60,14 +69,55 @@ export const useQuestions = () => {
             alert('Please fill all the required fields.');
         } else {
             try {
-                const response = await axios.post('https://server.salescontrol.kz/api/questions/done', {
+                const answersWithBase64Photos = await Promise.all(answers.map(async answer => {
+                    const photos = await Promise.all(answer.photos.map(photo => convertFileToBase64(photo)));
+                    return {
+                        ...answer,
+                        photos: photos.map(photo => photo.substring('data:image/webp;base64,'.length))
+                    };
+                }));
+
+                const url = 'https://server.salescontrol.kz/api/questions/done';
+
+                console.log({ answersWithBase64Photos });
+
+                const response = await axios.post(url, {
                     token,
                     chat_id: chatId,
                     selected_unit: selectedUnit,
                     selected_model: selectedModel,
-                    answers
+                    answers : answersWithBase64Photos
                 });
+
+                // const {status, checklist_id } = response.data;
+                
                 console.log('Response:', response.data);
+
+                // // const url1 = 'https://server.salescontrol.kz/api/questions/upload';
+                // const url1 = 'https://app.scont.io/Remotes/checklist_bot_rwett64iu';
+
+
+                // if (status === 'ok' && checklist_id.length > 0) {
+                //     console.log({ photo: answersWithBase64Photos[4].photos[0] });
+
+                //     const response1 = await axios.post(url1, {
+                //             command: "question_file",
+                //             token,
+                //             chat_id: chatId,
+                //             checklist_id,
+                //             question_id: answers[4],
+                //             value: answersWithBase64Photos[4].photos[0],
+
+                //         // photo: answersWithBase64Photos[4].photos[0],
+                //         // checklist_id: response.data.checklist_id[0],
+                //         // selected_unit: selectedUnit,
+                //         // selected_model: selectedModel,
+                //         // answer: answers[4]
+                //     });
+
+                //     console.log('Response:', response1.data);
+                // }
+                
                 alert('Answers successfully submitted!');
             } catch (error) {
                 console.error('Error submitting answers:', error);
