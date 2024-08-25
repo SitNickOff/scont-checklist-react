@@ -30,6 +30,7 @@ const QuestionsStepper = () => {
     handleRemovePhoto,
     maxSteps,
     setMaxSteps,
+    loading: savingLoading,
   } = useQuestions();
 
   useEffect(() => {
@@ -80,6 +81,7 @@ const QuestionsStepper = () => {
             validationErrors={validationErrors}
             handleEdit={handleEdit}
             handleSave={() => handleSave(chatId, token, objectId, checklistId)}
+            loading={savingLoading}
           />
         ) : (
           <QuestionForm
