@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Box, Button, CircularProgress, MobileStepper } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  MobileStepper,
+  Snackbar,
+} from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { useQuestions } from "../hooks/useQuestions";
 import { getQuestions } from "../api";
 import QuestionForm from "./QuestionForm";
 import Review from "./Review";
+import { useNavigate } from "react-router-dom";
 
 const QuestionsStepper = () => {
   const [loading, setLoading] = useState(true);
   const { chatId, token, objectId, checklistId } = useSelector(
     (state) => state.app
   );
+
+  const navigate = useNavigate();
 
   const {
     questions,
@@ -31,6 +41,8 @@ const QuestionsStepper = () => {
     maxSteps,
     setMaxSteps,
     loading: savingLoading,
+    success,
+    setSuccess,
   } = useQuestions();
 
   useEffect(() => {
@@ -67,12 +79,32 @@ const QuestionsStepper = () => {
     fetchQuestions();
   }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions]);
 
+  const handleSnackbarClose = () => {
+    setSuccess(false);
+    navigate("/");
+  };
+
   if (loading) {
     return <CircularProgress />;
   }
 
   return (
     <Box sx={{ width: "100%" }}>
+      <Snackbar
+        open={success}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Данные успешно сохранены!
+        </Alert>
+      </Snackbar>
       <Box sx={{ p: 2 }}>
         {isReview ? (
           <Review

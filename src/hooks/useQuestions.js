@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 export const useQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -10,7 +9,7 @@ export const useQuestions = () => {
   const [validationErrors, setValidationErrors] = useState([]);
   const [maxSteps, setMaxSteps] = useState(0);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
 
   const validateAnswers = (answers) => {
     return answers.map((answer, index) => {
@@ -103,7 +102,8 @@ export const useQuestions = () => {
         console.log({ response });
 
         setLoading(false);
-        navigate("/");
+        // navigate("/");
+        setSuccess(true);
       } catch (error) {
         setLoading(false);
         alert("Ошибка при отправке. Пожалуйста, попробуйте снова.");
@@ -152,5 +152,7 @@ export const useQuestions = () => {
     maxSteps,
     setMaxSteps,
     loading,
+    success,
+    setSuccess,
   };
 };
