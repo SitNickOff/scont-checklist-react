@@ -62,6 +62,7 @@ const QuestionForm = ({
             sx={{
               color: "inherit",
             }}
+            key={index}
           >
             <b>{desc.values}:</b> {desc.values_description}
           </Typography>

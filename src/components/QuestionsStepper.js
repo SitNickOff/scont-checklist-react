@@ -50,15 +50,15 @@ const QuestionsStepper = () => {
       try {
         const data = await getQuestions(token, chatId, checklistId);
 
-        console.log({ data });
-
         setQuestions(
           data.map((i, index) => ({
             id: i.yardstick,
             name: `Вопрос ${index + 1}`,
             text: i.yardstick_name_for_report,
             options: [...i.scores],
-            optionDescriptions: [...i.teh_values_descriptions],
+            optionDescriptions: i.teh_values_descriptions
+              ? [...i.teh_values_descriptions]
+              : [],
             requireComment: i.req_comments,
             requirePhoto: i.req_files,
           }))
