@@ -36,7 +36,7 @@ const QuestionForm = ({
           variant="h5"
           sx={{
             color: "inherit",
-            marginBottom: 4,
+            marginBottom: 2,
           }}
         >
           {`${questionIndex + 1}. ${question.text}`}
@@ -54,6 +54,18 @@ const QuestionForm = ({
         <IconButton color="primary" onClick={handleGoHome}>
           <HomeIcon />
         </IconButton>
+      </Box>
+      <Box sx={{ marginBottom: 2 }}>
+        {question.optionDescriptions.map((desc, index) => (
+          <Typography
+            variant="body2"
+            sx={{
+              color: "inherit",
+            }}
+          >
+            <b>{desc.values}:</b> {desc.values_description}
+          </Typography>
+        ))}
       </Box>
       <Box>
         {question.options.map((option, index) => (
