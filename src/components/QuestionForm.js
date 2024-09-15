@@ -90,7 +90,14 @@ const QuestionForm = ({
       />
       <Button variant="contained" component="label" sx={{ mt: 2 }}>
         Загрузить фото
-        <input type="file" hidden multiple onChange={handleFilesChange} />
+        <input
+          type="file"
+          hidden
+          multiple
+          onChange={handleFilesChange}
+          accept="image/*" // Ограничение на изображения
+          capture="environment" // Открытие камеры по умолчанию
+        />
       </Button>
       {answer.photos && answer.photos.length > 0 && (
         <Box sx={{ mt: 2 }}>
