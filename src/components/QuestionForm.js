@@ -95,8 +95,8 @@ const QuestionForm = ({
           hidden
           multiple
           onChange={handleFilesChange}
-          // accept="image/*" // Ограничение на изображения
-          capture="environment" // Открытие камеры по умолчанию
+          accept="image/*" // Ограничение на изображения
+          // capture="environment" // Открытие камеры по умолчанию
         />
       </Button>
       {answer.photos && answer.photos.length > 0 && (

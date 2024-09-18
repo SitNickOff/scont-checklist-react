@@ -82,20 +82,22 @@ export const useQuestions = () => {
             );
             return {
               ...answer,
-              photos, //photos.map((photo) => photo),
+              photos,
             };
           })
         );
 
         const url = "https://server.salescontrol.kz/api/questions/done";
 
-        const response = await axios.post(url, {
+        const data = {
           token,
           chat_id: chatId,
           selected_unit: selectedUnit,
           selected_model: selectedModel,
           answers: answersWithBase64Photos,
-        });
+        };
+
+        const response = await axios.post(url, data);
 
         console.log({ response });
 
