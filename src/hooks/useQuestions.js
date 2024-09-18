@@ -82,9 +82,7 @@ export const useQuestions = () => {
             );
             return {
               ...answer,
-              photos: photos.map((photo) =>
-                photo.substring("data:image/webp;base64,".length)
-              ),
+              photos, //photos.map((photo) => photo),
             };
           })
         );
