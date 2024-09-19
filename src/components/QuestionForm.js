@@ -22,9 +22,57 @@ const QuestionForm = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleFilesChange = (event) => {
+  const resizeImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxWidth = 800; // Задаем максимальную ширину
+          const maxHeight = 800; // Задаем максимальную высоту
+          let width = img.width;
+          let height = img.height;
+
+          // Сохранение пропорций
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Преобразование изображения обратно в файл
+          canvas.toBlob(
+            (blob) => {
+              resolve(blob);
+            },
+            file.type,
+            0.7
+          ); // Сжимаем до 70% качества
+        };
+      };
+    });
+  };
+
+  const handleFilesChange = async (event) => {
     const files = Array.from(event.target.files);
-    handleChange(questionIndex, "photos", [...answer.photos, ...files]);
+    const resizedFiles = await Promise.all(
+      files.map((file) => resizeImage(file))
+    );
+    handleChange(questionIndex, "photos", [...answer.photos, ...resizedFiles]);
   };
 
   const handleGoHome = () => navigate("/");
