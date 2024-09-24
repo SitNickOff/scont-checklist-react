@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 
@@ -136,8 +138,17 @@ const QuestionForm = ({
         margin="normal"
         required={question.requireComment}
       />
-      <Button variant="contained" component="label" sx={{ mt: 2 }}>
-        Загрузить фото
+      <Button variant="contained" component="label" sx={{ mt: 2, mr: 1 }}>
+        <AddAPhotoIcon
+          sx={
+            {
+              // margin: "0 0 10px 4px",
+              // color: "red",
+              // width: 16,
+              // height: 16,
+            }
+          }
+        />
         <input
           type="file"
           hidden
@@ -145,6 +156,26 @@ const QuestionForm = ({
           onChange={handleFilesChange}
           accept="image/*" // Ограничение на изображения
           capture // ="environment" // Открытие камеры по умолчанию
+        />
+      </Button>
+      <Button variant="contained" component="label" sx={{ mt: 2 }}>
+        <AddPhotoAlternateIcon
+          sx={
+            {
+              // margin: "0 0 10px 4px",
+              // color: "red",
+              // width: 16,
+              // height: 16,
+            }
+          }
+        />
+        <input
+          type="file"
+          hidden
+          multiple
+          onChange={handleFilesChange}
+          accept="image/*" // Ограничение на изображения
+          // capture // ="environment" // Открытие камеры по умолчанию
         />
       </Button>
       {answer.photos && answer.photos.length > 0 && (
