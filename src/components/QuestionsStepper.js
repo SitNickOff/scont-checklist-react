@@ -14,9 +14,11 @@ import { getQuestions } from "../api";
 import QuestionForm from "./QuestionForm";
 import Review from "./Review";
 import { useNavigate } from "react-router-dom";
+import Preview from "./Preview";
 
 const QuestionsStepper = () => {
   const [loading, setLoading] = useState(true);
+  const [isPreview, setIsPreview] = useState(true); // Управление первым превью
   const { chatId, token, objectId, checklistId } = useSelector(
     (state) => state.app
   );
@@ -88,6 +90,11 @@ const QuestionsStepper = () => {
     navigate("/");
   };
 
+  const handleReviewInPreview = () => {
+    setIsPreview(false);
+    handleReview();
+  }
+
   if (loading) {
     return <CircularProgress />;
   }
@@ -109,28 +116,40 @@ const QuestionsStepper = () => {
           Данные успешно сохранены!
         </Alert>
       </Snackbar>
-      <Box sx={{ p: 2 }}>
-        {isReview ? (
-          <Review
-            answers={answers}
-            questions={questions}
-            validationErrors={validationErrors}
-            handleEdit={handleEdit}
-            handleSave={() => handleSave(chatId, token, objectId, checklistId)}
-            loading={savingLoading}
-          />
-        ) : (
-          <QuestionForm
-            questionIndex={activeStep}
-            question={questions[activeStep]}
-            answer={answers[activeStep]}
-            validationErrors={validationErrors[activeStep]}
-            handleChange={handleChange}
-            handleRemovePhoto={handleRemovePhoto}
-          />
-        )}
-      </Box>
-      {!isReview && (
+      {isPreview ? (
+        <Preview 
+          answers={answers}
+          questions={questions}
+          handleEdit={handleEdit}
+          setIsPreview={setIsPreview}
+          handleReview={handleReviewInPreview}
+        />
+      ) : (
+        <Box sx={{ p: 2 }}>
+          {isReview ? (
+            <Review
+              answers={answers}
+              questions={questions}
+              validationErrors={validationErrors}
+              handleEdit={handleEdit}
+              handleSave={() =>
+                handleSave(chatId, token, objectId, checklistId)
+              }
+              loading={savingLoading}
+            />
+          ) : (
+            <QuestionForm
+              questionIndex={activeStep}
+              question={questions[activeStep]}
+              answer={answers[activeStep]}
+              validationErrors={validationErrors[activeStep]}
+              handleChange={handleChange}
+              handleRemovePhoto={handleRemovePhoto}
+            />
+          )}
+        </Box>
+      )}
+      {!isPreview && !isReview && (
         <MobileStepper
           variant="text"
           steps={maxSteps}
@@ -150,8 +169,11 @@ const QuestionsStepper = () => {
           }
         />
       )}
-      {!isReview && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+      {!isPreview && !isReview && (
+        <Box sx={{ display: "flex", justifyContent: "space-around", mt: 2, mb: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => setIsPreview(true)}>
+            К списку
+          </Button>
           <Button variant="contained" color="primary" onClick={handleReview}>
             Завершить
           </Button>
