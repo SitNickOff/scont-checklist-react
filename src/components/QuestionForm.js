@@ -6,7 +6,10 @@ import {
   TextField,
   Typography,
   IconButton,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
@@ -79,6 +82,21 @@ const QuestionForm = ({
 
   const handleGoHome = () => navigate("/");
 
+  const handleCheckboxChange = (option) => {
+    const currentAnswers = answer.text || []; // Массив текущих ответов
+    if (currentAnswers.includes(option)) {
+      // Удалить из массива, если уже выбрано
+      handleChange(
+        questionIndex,
+        "text",
+        currentAnswers.filter((item) => item !== option)
+      );
+    } else {
+      // Добавить в массив
+      handleChange(questionIndex, "text", [...currentAnswers, option]);
+    }
+  };
+
   return (
     <Box>
       <Box display="flex" alignItems="start" justifyContent="space-between">
@@ -119,15 +137,24 @@ const QuestionForm = ({
         ))}
       </Box>
       <Box>
-        {question.options.map((option, index) => (
-          <Chip
-            key={index}
-            label={option}
-            onClick={() => handleChange(questionIndex, "text", option)}
-            color={answer.text === option ? "primary" : "default"}
-            clickable
-            sx={{ m: 1 }}
-          />
+        {question && question.options.map((option, index) => (
+          question.multi === 'single'
+            ? <Chip
+              key={index}
+              label={option}
+              onClick={() => handleChange(questionIndex, "text", option)}
+              color={answer.text === option ? "primary" : "default"}
+              clickable
+              sx={{ m: 1 }}
+            />
+            : <FormControlLabel 
+              key={index} 
+              control={<Checkbox 
+                checked={answer.text?.includes(option) || false}
+                onChange={() => handleCheckboxChange(option)}
+              />} 
+              label={option} 
+            />
         ))}
       </Box>
       <TextField

@@ -61,11 +61,12 @@ const QuestionsStepper = () => {
               : [],
             requireComment: i.req_comments,
             requirePhoto: i.req_files,
+            multi: i.multi,
           }))
         );
         setAnswers(
           data.map((i) => ({
-            text: "",
+            text: i.multi === "single" ? "" : [],
             comment: "",
             photos: [],
             questionId: i.yardstick,

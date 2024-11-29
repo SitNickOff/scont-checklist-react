@@ -14,11 +14,14 @@ export const useQuestions = () => {
   const validateAnswers = (answers) => {
     return answers.map((answer, index) => {
       const question = questions[index];
-      const isTextValid = answer.text.trim() !== "";
+      const isTextValid = Array.isArray(answer.text)
+        ? answer.text.length > 0 // Для массива проверяем, что есть выбранные элементы
+        : answer.text.trim() !== ""; // Для строки проверяем, что она не пустая
+  
       const isCommentValid =
         !question.requireComment || answer.comment.trim() !== "";
       const isPhotoValid = !question.requirePhoto || answer.photos.length > 0;
-
+  
       return {
         text: !isTextValid,
         comment: !isCommentValid,
