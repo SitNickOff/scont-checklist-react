@@ -14,8 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import HomeIcon from "@mui/icons-material/Home";
-import { useNavigate } from "react-router-dom";
+import HomeButton from "./HomeButton";
 
 const QuestionForm = ({
   questionIndex,
@@ -25,7 +24,7 @@ const QuestionForm = ({
   handleRemovePhoto,
   question,
 }) => {
-  const navigate = useNavigate();
+  
 
   const resizeImage = (file) => {
     return new Promise((resolve) => {
@@ -80,7 +79,7 @@ const QuestionForm = ({
     handleChange(questionIndex, "photos", [...answer.photos, ...resizedFiles]);
   };
 
-  const handleGoHome = () => navigate("/");
+  // const handleGoHome = () => navigate("/");
 
   const handleCheckboxChange = (option) => {
     const currentAnswers = answer.text || []; // Массив текущих ответов
@@ -119,9 +118,10 @@ const QuestionForm = ({
             />
           )}
         </Typography>
-        <IconButton color="primary" onClick={handleGoHome}>
+        <HomeButton />
+        {/* <IconButton color="primary" onClick={handleGoHomeClick}>
           <HomeIcon />
-        </IconButton>
+        </IconButton> */}
       </Box>
       <Box sx={{ marginBottom: 2 }}>
         {question.optionDescriptions.map((desc, index) => (

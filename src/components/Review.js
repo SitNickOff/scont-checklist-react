@@ -7,11 +7,9 @@ import {
   Card,
   CardContent,
   CardActions,
-  IconButton,
   CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import HomeIcon from "@mui/icons-material/Home";
+import HomeButton from "./HomeButton";
 
 const Review = ({
   answers,
@@ -21,12 +19,6 @@ const Review = ({
   questions,
   loading,
 }) => {
-  const navigate = useNavigate();
-
-  const handleGoHome = () => {
-    navigate("/");
-  };
-
   return (
     <Box sx={{ position: "relative" }}>
       {loading && (
@@ -56,9 +48,7 @@ const Review = ({
       >
         <Box display="flex" alignItems="start" justifyContent="space-between">
           <Typography variant="h5">Результаты заполнения чек-листа</Typography>
-          <IconButton color="primary" onClick={handleGoHome} disabled={loading}>
-            <HomeIcon />
-          </IconButton>
+          <HomeButton />
         </Box>
         {answers.map((answer, index) => (
           <Card key={index} sx={{ mb: 2 }}>
