@@ -63,7 +63,9 @@ const QuestionsStepper = () => {
               : [],
             requireComment: i.req_comments,
             requirePhoto: i.req_files,
+            required: i.required,
             multi: i.multi,
+            links: i.links
           }))
         );
         setAnswers(

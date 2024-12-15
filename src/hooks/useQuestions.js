@@ -14,9 +14,11 @@ export const useQuestions = () => {
   const validateAnswers = (answers) => {
     return answers.map((answer, index) => {
       const question = questions[index];
-      const isTextValid = Array.isArray(answer.text)
-        ? answer.text.length > 0 // Для массива проверяем, что есть выбранные элементы
-        : answer.text.trim() !== ""; // Для строки проверяем, что она не пустая
+      const isTextValid = question.required 
+        ? Array.isArray(answer.text)
+          ? answer.text.length > 0 // Для массива проверяем, что есть выбранные элементы
+          : answer.text.trim() !== "" // Для строки проверяем, что она не пустая
+        : true; // Если required=false, текст не проверяется.
   
       const isCommentValid =
         !question.requireComment || answer.comment.trim() !== "";

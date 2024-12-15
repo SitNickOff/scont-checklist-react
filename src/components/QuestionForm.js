@@ -8,6 +8,7 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
+  Link,
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -157,6 +158,24 @@ const QuestionForm = ({
             />
         ))}
       </Box>
+
+      {question.links && question.links.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Ссылки:</Typography>
+          {question.links.map((linkObj, index) => (
+            <Typography key={index} sx={{ mb: 1 }}>
+              {linkObj.link !== "Без ссылки" ? (
+                <Link href={linkObj.link} target="_blank" rel="noopener">
+                  {linkObj.name}
+                </Link>
+              ) : (
+                linkObj.name
+              )}
+            </Typography>
+          ))}
+        </Box>
+      )}
+
       <TextField
         label="Комментарий"
         fullWidth
