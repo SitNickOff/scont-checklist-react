@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -11,6 +12,31 @@ import {
 } from "@mui/material";
 import HomeButton from "./HomeButton";
 
+const messages = {
+  ru: {
+    reviewTitle: "Результаты заполнения чек-листа",
+    answer: "Ответ:",
+    comment: "Комментарий:",
+    photo: "Фото:",
+    edit: "Редактировать",
+    save: "Сохранить (Завершить)",
+    errorText: "Требуется ответ",
+    errorComment: "Требуется комментарий",
+    errorPhoto: "Требуется фото",
+  },
+  en: {
+    reviewTitle: "Checklist Completion Results",
+    answer: "Answer:",
+    comment: "Comment:",
+    photo: "Photos:",
+    edit: "Edit",
+    save: "Save (Finish)",
+    errorText: "Answer required",
+    errorComment: "Comment required",
+    errorPhoto: "Photo required",
+  },
+};
+
 const Review = ({
   answers,
   validationErrors,
@@ -19,6 +45,9 @@ const Review = ({
   questions,
   loading,
 }) => {
+  const { lang } = useSelector((state) => state.app);
+  const texts = messages[lang];
+
   return (
     <Box sx={{ position: "relative" }}>
       {loading && (
@@ -47,7 +76,7 @@ const Review = ({
         }}
       >
         <Box display="flex" alignItems="start" justifyContent="space-between">
-          <Typography variant="h5">Результаты заполнения чек-листа</Typography>
+          <Typography variant="h5">{texts.reviewTitle}</Typography>
           <HomeButton />
         </Box>
         {answers.map((answer, index) => (
@@ -56,19 +85,19 @@ const Review = ({
               <Typography variant="h5" sx={{ mb: 2 }}>{`${index + 1}. ${
                 questions[index].text
               }`}</Typography>
-              {answer.text && <Typography>Ответ: {answer.text}</Typography>}
+              {answer.text && <Typography>{texts.answer} {answer.text}</Typography>}
               {validationErrors[index]?.text && (
-                <Alert severity="error">Требуется ответ</Alert>
+                <Alert severity="error">{texts.errorText}</Alert>
               )}
               {answer.comment && (
-                <Typography>Комментарий: {answer.comment}</Typography>
+                <Typography>{texts.comment} {answer.comment}</Typography>
               )}
               {validationErrors[index]?.comment && (
-                <Alert severity="error">Требуется комментарий</Alert>
+                <Alert severity="error">{texts.errorComment}</Alert>
               )}
               {answer.photos && answer.photos.length > 0 && (
                 <Box sx={{ mt: 2 }}>
-                  <Typography>Фото:</Typography>
+                  <Typography>{texts.photo}</Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                     {answer.photos.map((photo, i) => (
                       <Box key={i} sx={{ position: "relative", m: 1 }}>
@@ -83,12 +112,12 @@ const Review = ({
                 </Box>
               )}
               {validationErrors[index]?.photo && (
-                <Alert severity="error">Требуется фото</Alert>
+                <Alert severity="error">{texts.errorPhoto}</Alert>
               )}
             </CardContent>
             <CardActions>
               <Button onClick={() => handleEdit(index)} disabled={loading}>
-                Редактировать
+                {texts.edit}
               </Button>
             </CardActions>
           </Card>
@@ -104,7 +133,7 @@ const Review = ({
           }
           fullWidth
         >
-          Сохранить (Завершить)
+          {texts.save}
         </Button>
       </Box>
     </Box>

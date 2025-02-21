@@ -5,6 +5,7 @@ const initialState = {
     token: null,
     objectId: null,
     checklistId: null,
+    lang: 'ru' 
 };
 
 const appSlice = createSlice({
@@ -23,10 +24,13 @@ const appSlice = createSlice({
         setChecklistId: (state, action) => {
             state.checklistId = action.payload;
         },
+        setLang: (state, action) => {
+            state.lang = action.payload;
+        },
     },
 });
 
-export const { setChatId, setToken, setObjectId, setChecklistId } = appSlice.actions;
+export const { setChatId, setToken, setObjectId, setChecklistId, setLang } = appSlice.actions;
 
 const store = configureStore({
     reducer: {

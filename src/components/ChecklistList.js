@@ -14,13 +14,14 @@ import { useDispatch, useSelector } from "react-redux";
 import HomeIcon from "@mui/icons-material/Home";
 import { setChecklistId } from "../store";
 import { getChecklists } from "../api";
+import { MODELS } from "./messages";
 
 const ChecklistList = () => {
   const [checklists, setChecklists] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { chatId, token, objectId } = useSelector((state) => state.app);
+  const { chatId, token, objectId, lang } = useSelector((state) => state.app);
 
   useEffect(() => {
     const fetchChecklists = async () => {
@@ -59,7 +60,7 @@ const ChecklistList = () => {
         sx={{ mt: 2, mb: 2 }}
       >
         <Typography variant="h5" gutterBottom>
-          Модели оценки
+          { MODELS[lang] }
         </Typography>
         <IconButton color="primary" onClick={handleGoHome}>
           <HomeIcon />

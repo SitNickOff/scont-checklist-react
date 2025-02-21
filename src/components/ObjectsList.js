@@ -12,13 +12,14 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setObjectId } from "../store";
 import { getObjects } from "../api";
+import { OBJECTS } from "./messages";
 
 const ObjectsList = () => {
   const [objects, setObjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { chatId, token } = useSelector((state) => state.app);
+  const { chatId, token, lang } = useSelector((state) => state.app);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -48,7 +49,7 @@ const ObjectsList = () => {
     <Container>
       <Box display="flex" alignItems="center" sx={{ mt: 2, mb: 2 }}>
         <Typography variant="h5" gutterBottom>
-          Подразделения
+          {OBJECTS[lang]}
         </Typography>
       </Box>
       <List>

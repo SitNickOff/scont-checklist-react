@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -8,6 +9,23 @@ import {
 } from "@mui/material";
 import HomeButton from "./HomeButton";
 
+const messages = {
+  ru: {
+    previewTitle: "Превью вопросов",
+    edit: "Редактировать",
+    fill: "Заполнить",
+    startFilling: "Начать заполнение",
+    finish: "Завершить",
+  },
+  en: {
+    previewTitle: "Preview Questions",
+    edit: "Edit",
+    fill: "Fill in",
+    startFilling: "Start Filling",
+    finish: "Finish",
+  },
+};
+
 const Preview = ({
   answers,
   handleEdit,
@@ -15,11 +33,14 @@ const Preview = ({
   setIsPreview,
   handleReview
 }) => {
+  const { lang } = useSelector((state) => state.app);
+  const texts = messages[lang];
+
   return (
     <Box sx={{ p: 2 }}>
       <Box display="flex" alignItems="start" justifyContent="space-between">
         <Typography variant="h5" sx={{ mb: 2 }}>
-          Превью вопросов
+          {texts.previewTitle}
         </Typography>
         <HomeButton />
       </Box>
@@ -45,7 +66,7 @@ const Preview = ({
                 {(Array.isArray(answers[index].text)
                   ? answers[index].text.length > 0 // Для массива проверяем, что есть выбранные элементы
                   : answers[index].text.trim() !== "" // Для строки проверяем, что она не пустая
-                ) ? "Редактировать" : "Заполнить"}
+                ) ? texts.edit : texts.fill}
                 
               </Button>
             </CardContent>
@@ -58,10 +79,10 @@ const Preview = ({
           color="primary"
           onClick={() => setIsPreview(false)}
         >
-          Начать заполнение
+          { texts.startFilling }
         </Button>
         <Button variant="contained" color="primary" onClick={handleReview}>
-          Завершить
+        { texts.finish }
         </Button>
       </Box>
     </Box>

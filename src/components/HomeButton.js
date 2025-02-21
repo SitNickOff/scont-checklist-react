@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -12,7 +13,23 @@ import {
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 
+const messages = {
+  ru: {
+    confirmTitle: "Подтверждение действия",
+    confirmText: "Вы уверены, что хотите вернуться на главную страницу? Все несохраненные данные будут потеряны.",
+    cancel: "Отмена",
+    confirm: "Подтвердить",
+  },
+  en: {
+    confirmTitle: "Action Confirmation",
+    confirmText: "Are you sure you want to return to the homepage? All unsaved data will be lost.",
+    cancel: "Cancel",
+    confirm: "Confirm",
+  },
+};
+
 const HomeButton = () => {
+  const { lang } = useSelector((state) => state.app);
   const [openDialog, setOpenDialog] = useState(false); 
   const navigate = useNavigate();
 
@@ -35,19 +52,18 @@ const HomeButton = () => {
     </IconButton>
     {/* Диалог подтверждения */}
     <Dialog open={openDialog} onClose={handleCancelGoHome}>
-      <DialogTitle>Подтверждение действия</DialogTitle>
+      <DialogTitle>{ messages[lang].confirmTitle }</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Вы уверены, что хотите вернуться на главную страницу? Все
-          несохраненные данные будут потеряны.
+          { messages[lang].confirmText }
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancelGoHome} color="primary">
-          Отмена
+        { messages[lang].cancel }
         </Button>
         <Button onClick={handleConfirmGoHome} color="secondary" autoFocus>
-          Подтвердить
+        { messages[lang].confirm }
         </Button>
       </DialogActions>
     </Dialog>

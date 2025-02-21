@@ -16,12 +16,32 @@ import Review from "./Review";
 import { useNavigate } from "react-router-dom";
 import Preview from "./Preview";
 
+const messages = {
+  ru: {
+    dataSaved: "Данные успешно сохранены!",
+    forward: "Вперед",
+    back: "Назад",
+    toList: "К списку",
+    finish: "Завершить",
+    question: "Вопрос"
+  },
+  en: {
+    dataSaved: "Data successfully saved!",
+    forward: "Forward",
+    back: "Back",
+    toList: "To list",
+    finish: "Finish",
+    question: "Question"
+  },
+};
+
 const QuestionsStepper = () => {
   const [loading, setLoading] = useState(true);
   const [isPreview, setIsPreview] = useState(true); // Управление первым превью
-  const { chatId, token, objectId, checklistId } = useSelector(
+  const { chatId, token, objectId, checklistId, lang } = useSelector(
     (state) => state.app
   );
+  const texts = messages[lang];
 
   const navigate = useNavigate();
 
@@ -55,7 +75,7 @@ const QuestionsStepper = () => {
         setQuestions(
           data.map((i, index) => ({
             id: i.yardstick,
-            name: `Вопрос ${index + 1}`,
+            name: `${texts.question} ${index + 1}`,
             text: i.yardstick_name_for_report,
             options: [...i.scores],
             optionDescriptions: i.teh_values_descriptions
@@ -85,7 +105,7 @@ const QuestionsStepper = () => {
     };
 
     fetchQuestions();
-  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions]);
+  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question]);
 
   const handleSnackbarClose = () => {
     setSuccess(false);
@@ -115,7 +135,7 @@ const QuestionsStepper = () => {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          Данные успешно сохранены!
+          {texts.dataSaved}
         </Alert>
       </Snackbar>
       {isPreview ? (
@@ -159,14 +179,14 @@ const QuestionsStepper = () => {
           activeStep={activeStep}
           nextButton={
             <Button size="small" onClick={handleNext}>
-              Вперед
+              {texts.forward}
               <KeyboardArrowRight />
             </Button>
           }
           backButton={
             <Button size="small" onClick={handleBack}>
               <KeyboardArrowLeft />
-              Назад
+              {texts.back}
             </Button>
           }
         />
@@ -174,10 +194,10 @@ const QuestionsStepper = () => {
       {!isPreview && !isReview && (
         <Box sx={{ display: "flex", justifyContent: "space-around", mt: 2, mb: 2 }}>
           <Button variant="contained" color="primary" onClick={() => setIsPreview(true)}>
-            К списку
+            {texts.toList}
           </Button>
           <Button variant="contained" color="primary" onClick={handleReview}>
-            Завершить
+            {texts.finish}
           </Button>
         </Box>
       )}

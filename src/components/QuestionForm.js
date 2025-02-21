@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -17,6 +18,19 @@ import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import HomeButton from "./HomeButton";
 
+const messages = {
+  ru: {
+    comment: "Комментарий",
+    links: "Ссылки:",
+    photos: "Фото:",
+  },
+  en: {
+    comment: "Comment",
+    links: "Links:",
+    photos: "Photos:",
+  },
+};
+
 const QuestionForm = ({
   questionIndex,
   answer,
@@ -25,7 +39,8 @@ const QuestionForm = ({
   handleRemovePhoto,
   question,
 }) => {
-  
+  const { lang } = useSelector((state) => state.app);
+  const texts = messages[lang];
 
   const resizeImage = (file) => {
     return new Promise((resolve) => {
@@ -161,7 +176,7 @@ const QuestionForm = ({
 
       {question.links && question.links.length > 0 && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">Ссылки:</Typography>
+          <Typography variant="h6">{texts.links}</Typography>
           {question.links.map((linkObj, index) => (
             <Typography key={index} sx={{ mb: 1 }}>
               {linkObj.link !== "Без ссылки" ? (
@@ -177,7 +192,7 @@ const QuestionForm = ({
       )}
 
       <TextField
-        label="Комментарий"
+        label={texts.comment}
         fullWidth
         value={answer.comment}
         onChange={(e) => handleChange(questionIndex, "comment", e.target.value)}
@@ -226,7 +241,7 @@ const QuestionForm = ({
       </Button>
       {answer.photos && answer.photos.length > 0 && (
         <Box sx={{ mt: 2 }}>
-          <Typography>Фото:</Typography>
+          <Typography>{texts.photos}</Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap" }}>
             {answer.photos.map((photo, index) => (
               <Box key={index} sx={{ position: "relative", m: 1 }}>

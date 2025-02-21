@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setChatId, setToken } from './store';
+import { setChatId, setLang, setToken } from './store';
 import ObjectsList from './components/ObjectsList';
 import ChecklistList from './components/ChecklistList';
 import QuestionsStepper from './components/QuestionsStepper';
@@ -16,10 +16,12 @@ const App = () => {
     const params = new URLSearchParams(window.location.search);
     const chatIdParam = params.get('chat_id');
     const tokenParam = params.get('token');
+    const langParam = params.get('lang') || 'ru';
     
     if (chatIdParam && tokenParam) {
       dispatch(setChatId(chatIdParam));
       dispatch(setToken(tokenParam));
+      dispatch(setLang(langParam));
       setIsAuthorized(true);
       
     }
