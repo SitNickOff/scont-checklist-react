@@ -49,8 +49,8 @@ const Preview = ({
         {questions.map((question, index) => (
           <Card key={index} sx={{ mb: 2 }}>
             <CardContent>
-              <Typography variant="h6">{question.name}</Typography>
-              <Typography>{question.text}</Typography>
+              <Typography variant="h6">{question.text}</Typography>
+              {/* <Typography>{question.text}</Typography> */}
               <Button
                 variant="contained"
                 color={(Array.isArray(answers[index].text)

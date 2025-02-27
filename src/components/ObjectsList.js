@@ -7,12 +7,13 @@ import {
   Container,
   CircularProgress,
   Box,
+  Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setObjectId } from "../store";
 import { getObjects } from "../api";
-import { OBJECTS } from "./messages";
+import { OBJECTS, SELECT } from "./messages";
 
 const ObjectsList = () => {
   const [objects, setObjects] = useState([]);
@@ -57,9 +58,11 @@ const ObjectsList = () => {
           <ListItem
             button
             key={index}
-            onClick={() => handleSelectObject(obj.uid)}
           >
             <ListItemText primary={obj.name} />
+            <Button variant="contained" color="primary" onClick={() => handleSelectObject(obj.uid)}>
+              {SELECT[lang]}
+            </Button>
           </ListItem>
         ))}
       </List>

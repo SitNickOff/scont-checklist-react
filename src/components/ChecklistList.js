@@ -8,13 +8,14 @@ import {
   CircularProgress,
   IconButton,
   Box,
+  Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import HomeIcon from "@mui/icons-material/Home";
 import { setChecklistId } from "../store";
 import { getChecklists } from "../api";
-import { MODELS } from "./messages";
+import { CHECKLIST, MODELS, SELECT } from "./messages";
 
 const ChecklistList = () => {
   const [checklists, setChecklists] = useState([]);
@@ -72,15 +73,17 @@ const ChecklistList = () => {
           <ListItem
             button
             key={index}
-            onClick={() => handleSelectChecklist(checklist.model_id)}
           >
             <ListItemText
               primary={
                 checklist.description
                   ? checklist.description
-                  : `Чек-лист: ${checklist.model_id}`
+                  : `${CHECKLIST[lang]}: ${checklist.model_id}`
               }
             />
+            <Button variant="contained" color="primary" onClick={() => handleSelectChecklist(checklist.model_id)}>
+              {SELECT[lang]}
+            </Button>
           </ListItem>
         ))}
       </List>
