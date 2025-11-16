@@ -22,7 +22,8 @@ const appSlice = createSlice({
             state.objectId = action.payload;
         },
         setChecklistId: (state, action) => {
-            state.checklistId = action.payload;
+            state.checklistId = action.payload.checklistId;
+            state.only_cam_inspector_bot = action.payload.only_cam_inspector_bot ?? false;
         },
         setLang: (state, action) => {
             state.lang = action.payload;
