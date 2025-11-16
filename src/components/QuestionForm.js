@@ -23,11 +23,15 @@ const messages = {
     comment: "Комментарий",
     links: "Ссылки:",
     photos: "Фото:",
+    requiredQuestion: "Обязательный вопрос",
+    requiredComment: "Обязательный комментарий",
   },
   en: {
     comment: "Comment",
     links: "Links:",
     photos: "Photos:",
+    requiredQuestion: "Required question",
+    requiredComment: "Required comment",
   },
 };
 
@@ -152,6 +156,15 @@ const QuestionForm = ({
           </Typography>
         ))}
       </Box>
+      {question.required && (
+        <Chip
+          label={texts.requiredQuestion}
+          size="small"
+          color="error"
+          variant="outlined"
+          sx={{ mb: 1 }}
+        />
+      )}
       <Box>
         {question && question.options.map((option, index) => (
           question.multi === 'single'
@@ -198,6 +211,7 @@ const QuestionForm = ({
         onChange={(e) => handleChange(questionIndex, "comment", e.target.value)}
         margin="normal"
         required={question.requireComment}
+        error={question.requireComment && !answer.comment}
       />
       <Button variant="contained" component="label" sx={{ mt: 2, mr: 1 }}>
         <AddAPhotoIcon

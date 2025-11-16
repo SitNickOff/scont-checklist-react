@@ -52,7 +52,6 @@ const ChecklistList = () => {
     return <CircularProgress />;
   }
 
-  console.log(checklists);
   return (
     <Container>
       <Box
