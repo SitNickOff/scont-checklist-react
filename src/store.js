@@ -5,6 +5,7 @@ const initialState = {
     token: null,
     objectId: null,
     checklistId: null,
+    only_cam_inspector_bot: false,
     lang: 'ru' 
 };
 
