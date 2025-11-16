@@ -39,8 +39,8 @@ const ChecklistList = () => {
     fetchChecklists();
   }, [objectId, chatId, token]);
 
-  const handleSelectChecklist = (checklistId) => {
-    dispatch(setChecklistId(checklistId));
+  const handleSelectChecklist = (checklistId, only_cam_inspector_bot) => {
+    dispatch(setChecklistId({checklistId, only_cam_inspector_bot}));
     navigate(`/questions`);
   };
 
@@ -52,6 +52,7 @@ const ChecklistList = () => {
     return <CircularProgress />;
   }
 
+  console.log(checklists);
   return (
     <Container>
       <Box
@@ -81,7 +82,7 @@ const ChecklistList = () => {
                   : `${CHECKLIST[lang]}: ${checklist.model_id}`
               }
             />
-            <Button variant="contained" color="primary" onClick={() => handleSelectChecklist(checklist.model_id)}>
+            <Button variant="contained" color="primary" onClick={() => handleSelectChecklist(checklist.model_id, checklist.only_cam_inspector_bot)}>
               {SELECT[lang]}
             </Button>
           </ListItem>

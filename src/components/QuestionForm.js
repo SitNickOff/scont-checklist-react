@@ -39,7 +39,7 @@ const QuestionForm = ({
   handleRemovePhoto,
   question,
 }) => {
-  const { lang } = useSelector((state) => state.app);
+  const { lang, only_cam_inspector_bot } = useSelector((state) => state.app);
   const texts = messages[lang];
 
   const resizeImage = (file) => {
@@ -219,7 +219,7 @@ const QuestionForm = ({
           capture // ="environment" // Открытие камеры по умолчанию
         />
       </Button>
-      <Button variant="contained" component="label" sx={{ mt: 2 }}>
+      {!only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
         <AddPhotoAlternateIcon
           sx={
             {
@@ -238,7 +238,7 @@ const QuestionForm = ({
           accept="image/*" // Ограничение на изображения
           // capture // ="environment" // Открытие камеры по умолчанию
         />
-      </Button>
+      </Button>}
       {answer.photos && answer.photos.length > 0 && (
         <Box sx={{ mt: 2 }}>
           <Typography>{texts.photos}</Typography>
