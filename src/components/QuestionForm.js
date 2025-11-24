@@ -213,7 +213,15 @@ const QuestionForm = ({
         required={question.requireComment}
         error={question.requireComment && !answer.comment}
       />
-      <Button variant="contained" component="label" sx={{ mt: 2, mr: 1 }}>
+      <Button 
+        variant="contained" 
+        component="label" 
+        sx={{ 
+          mt: 2, 
+          mr: 1,
+          display: { xs: 'inline-flex', md: 'none' } // Скрываем на desktop
+        }}
+      >
         <AddAPhotoIcon
           sx={
             {
