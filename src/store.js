@@ -5,6 +5,7 @@ const initialState = {
     token: null,
     objectId: null,
     checklistId: null,
+    draftId: null,
     only_cam_inspector_bot: false,
     lang: 'ru' 
 };
@@ -29,10 +30,13 @@ const appSlice = createSlice({
         setLang: (state, action) => {
             state.lang = action.payload;
         },
+        setDraftId: (state, action) => {
+            state.draftId = action.payload;
+        },
     },
 });
 
-export const { setChatId, setToken, setObjectId, setChecklistId, setLang } = appSlice.actions;
+export const { setChatId, setToken, setObjectId, setChecklistId, setLang, setDraftId } = appSlice.actions;
 
 const store = configureStore({
     reducer: {

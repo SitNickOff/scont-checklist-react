@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setDraftId } from "../store";
 import {
   Alert,
   Box,
@@ -10,7 +11,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { useQuestions } from "../hooks/useQuestions";
-import { getQuestions } from "../api";
+import { getQuestions, getDraftAnswer } from "../api";
 import QuestionForm from "./QuestionForm";
 import Review from "./Review";
 import { useNavigate } from "react-router-dom";
@@ -38,10 +39,11 @@ const messages = {
 const QuestionsStepper = () => {
   const [loading, setLoading] = useState(true);
   const [isPreview, setIsPreview] = useState(true); // Управление первым превью
-  const { chatId, token, objectId, checklistId, lang } = useSelector(
+  const { chatId, token, objectId, checklistId, lang, draftId } = useSelector(
     (state) => state.app
   );
   const texts = messages[lang];
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
@@ -72,31 +74,63 @@ const QuestionsStepper = () => {
       try {
         const data = await getQuestions(token, chatId, checklistId);
 
-        setQuestions(
-          data.map((i, index) => ({
-            id: i.yardstick,
-            name: `${texts.question} ${index + 1}`,
-            text: i.yardstick_name_for_report,
-            options: [...i.scores],
-            optionDescriptions: i.teh_values_descriptions
-              ? [...i.teh_values_descriptions]
-              : [],
-            requireComment: i.req_comments,
-            requirePhoto: i.req_files,
-            required: i.required,
-            multi: i.multi,
-            links: i.links
-          }))
-        );
-        setAnswers(
-          data.map((i) => ({
-            text: i.multi === "single" ? "" : [],
-            comment: "",
-            photos: [],
-            questionId: i.yardstick,
-          }))
-        );
+        const questionsData = data.map((i, index) => ({
+          id: i.yardstick,
+          name: `${texts.question} ${index + 1}`,
+          text: i.yardstick_name_for_report,
+          options: [...i.scores],
+          optionDescriptions: i.teh_values_descriptions
+            ? [...i.teh_values_descriptions]
+            : [],
+          requireComment: i.req_comments,
+          requirePhoto: i.req_files,
+          required: i.required,
+          multi: i.multi,
+          links: i.links
+        }));
+
+        setQuestions(questionsData);
+        
+        const initialAnswers = data.map((i) => ({
+          text: i.multi === "single" ? "" : [],
+          comment: "",
+          photos: [],
+          questionId: i.yardstick,
+        }));
+        
+        setAnswers(initialAnswers);
         setMaxSteps(data.length);
+        
+        // Загружаем сохраненные ответы, если есть draft_id
+        if (draftId) {
+          try {
+            const savedAnswers = await Promise.all(
+              questionsData.map((q) =>
+                getDraftAnswer(token, chatId || "", draftId, q.id)
+              )
+            );
+            
+            // Объединяем сохраненные ответы с начальными
+            const mergedAnswers = initialAnswers.map((answer, index) => {
+              const saved = savedAnswers[index];
+              if (saved && saved.status === "ok" && saved.value) {
+                return {
+                  ...answer,
+                  text: saved.value.text || answer.text,
+                  comment: saved.value.comment || answer.comment,
+                  photos: saved.value.photos || answer.photos, // Оставляем как base64
+                };
+              }
+              return answer;
+            });
+            
+            setAnswers(mergedAnswers);
+          } catch (error) {
+            console.error("Ошибка загрузки сохраненных ответов:", error);
+            // Продолжаем с пустыми ответами
+          }
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -105,7 +139,7 @@ const QuestionsStepper = () => {
     };
 
     fetchQuestions();
-  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question]);
+  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question, draftId]);
 
   const handleSnackbarClose = () => {
     setSuccess(false);
@@ -155,7 +189,7 @@ const QuestionsStepper = () => {
               validationErrors={validationErrors}
               handleEdit={handleEdit}
               handleSave={() =>
-                handleSave(chatId, token, objectId, checklistId)
+                handleSave(chatId, token, objectId, checklistId, draftId)
               }
               loading={savingLoading}
             />
@@ -165,8 +199,31 @@ const QuestionsStepper = () => {
               question={questions[activeStep]}
               answer={answers[activeStep]}
               validationErrors={validationErrors[activeStep]}
-              handleChange={handleChange}
-              handleRemovePhoto={handleRemovePhoto}
+              handleChange={(index, field, value) =>
+                handleChange(
+                  index,
+                  field,
+                  value,
+                  token,
+                  chatId,
+                  objectId,
+                  checklistId,
+                  draftId,
+                  (id) => dispatch(setDraftId(id))
+                )
+              }
+              handleRemovePhoto={(index, photoIndex) =>
+                handleRemovePhoto(
+                  index,
+                  photoIndex,
+                  token,
+                  chatId,
+                  objectId,
+                  checklistId,
+                  draftId,
+                  (id) => dispatch(setDraftId(id))
+                )
+              }
             />
           )}
         </Box>
@@ -178,7 +235,19 @@ const QuestionsStepper = () => {
           position="static"
           activeStep={activeStep}
           nextButton={
-            <Button size="small" onClick={handleNext}>
+            <Button
+              size="small"
+              onClick={() =>
+                handleNext(
+                  token,
+                  chatId,
+                  objectId,
+                  checklistId,
+                  draftId,
+                  (id) => dispatch(setDraftId(id))
+                )
+              }
+            >
               {texts.forward}
               <KeyboardArrowRight />
             </Button>
