@@ -265,10 +265,16 @@ const QuestionForm = ({
         <Box sx={{ mt: 2 }}>
           <Typography>{texts.photos}</Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-            {answer.photos.map((photo, index) => (
+            {answer.photos.map((photo, index) => {
+              // Если photo - это base64 строка, используем напрямую, иначе создаем ObjectURL
+              const photoSrc = typeof photo === 'string' 
+                ? photo 
+                : URL.createObjectURL(photo);
+              
+              return (
               <Box key={index} sx={{ position: "relative", m: 1 }}>
                 <img
-                  src={URL.createObjectURL(photo)}
+                  src={photoSrc}
                   alt="Preview"
                   style={{ maxHeight: "200px", maxWidth: "200px" }}
                 />
@@ -286,7 +292,8 @@ const QuestionForm = ({
                   <DeleteIcon />
                 </IconButton>
               </Box>
-            ))}
+              );
+            })}
           </Box>
         </Box>
       )}
