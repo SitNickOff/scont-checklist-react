@@ -114,12 +114,23 @@ const QuestionsStepper = () => {
             const mergedAnswers = initialAnswers.map((answer, index) => {
               const saved = savedAnswers[index];
               if (saved && saved.status === "ok" && saved.value) {
-                return {
-                  ...answer,
-                  text: saved.value.text || answer.text,
-                  comment: saved.value.comment || answer.comment,
-                  photos: saved.value.photos || answer.photos, // Оставляем как base64
-                };
+                // Если value - массив, находим нужный элемент по questionId
+                let savedValue = saved.value;
+                if (Array.isArray(saved.value)) {
+                  savedValue = saved.value.find(
+                    (item) => item.questionId === answer.questionId
+                  ) || saved.value[0] || null;
+                }
+                
+                if (savedValue) {
+                  console.log('Загружен сохраненный ответ:', savedValue);
+                  return {
+                    ...answer,
+                    text: savedValue.text !== undefined ? savedValue.text : answer.text,
+                    comment: savedValue.comment !== undefined ? savedValue.comment : answer.comment,
+                    photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || answer.photos), // Оставляем как base64
+                  };
+                }
               }
               return answer;
             });
