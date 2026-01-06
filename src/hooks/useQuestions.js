@@ -196,7 +196,7 @@ export const useQuestions = () => {
     }, 1000); // Debounce 1 секунда
   }, [convertFileToBase64]);
 
-  const handleSave = async (chatId, token, selectedUnit, selectedModel, draftId) => {
+  const handleSave = async (chatId, token, selectedUnit, selectedModel, draftId, clearDraftId) => {
     const errors = validateAnswers(answers);
     setValidationErrors(errors);
     const hasErrors = errors.some(
@@ -213,6 +213,12 @@ export const useQuestions = () => {
         if (draftId) {
           const response = await doneDraft(token, chatId || "", draftId);
           console.log({ response });
+          
+          // Очищаем draft_id после успешного завершения
+          if (response.status === "ok" && clearDraftId) {
+            clearDraftId();
+          }
+          
           setLoading(false);
           setSuccess(true);
         } else {

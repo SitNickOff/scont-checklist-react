@@ -200,7 +200,14 @@ const QuestionsStepper = () => {
               validationErrors={validationErrors}
               handleEdit={handleEdit}
               handleSave={() =>
-                handleSave(chatId, token, objectId, checklistId, draftId)
+                handleSave(
+                  chatId,
+                  token,
+                  objectId,
+                  checklistId,
+                  draftId,
+                  () => dispatch(setDraftId(null))
+                )
               }
               loading={savingLoading}
             />
