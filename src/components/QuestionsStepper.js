@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setDraftId } from "../store";
 import {
@@ -39,6 +39,9 @@ const messages = {
 const QuestionsStepper = () => {
   const [loading, setLoading] = useState(true);
   const [isPreview, setIsPreview] = useState(true); // Управление первым превью
+  const [loadingAnswer, setLoadingAnswer] = useState(false); // Загрузка ответа на текущий вопрос
+  const [loadingPreviewAnswers, setLoadingPreviewAnswers] = useState(false); // Загрузка всех ответов для Preview
+  const loadedQuestionIdsRef = useRef(new Set()); // Кеш загруженных вопросов
   const { chatId, token, objectId, checklistId, lang, draftId } = useSelector(
     (state) => state.app
   );
@@ -100,48 +103,6 @@ const QuestionsStepper = () => {
         
         setAnswers(initialAnswers);
         setMaxSteps(data.length);
-        
-        // Загружаем сохраненные ответы, если есть draft_id
-        if (draftId) {
-          try {
-            const savedAnswers = await Promise.all(
-              questionsData.map((q) =>
-                getDraftAnswer(token, chatId || "", draftId, q.id)
-              )
-            );
-            
-            // Объединяем сохраненные ответы с начальными
-            const mergedAnswers = initialAnswers.map((answer, index) => {
-              const saved = savedAnswers[index];
-              if (saved && saved.status === "ok" && saved.value) {
-                // Если value - массив, находим нужный элемент по questionId
-                let savedValue = saved.value;
-                if (Array.isArray(saved.value)) {
-                  savedValue = saved.value.find(
-                    (item) => item.questionId === answer.questionId
-                  ) || saved.value[0] || null;
-                }
-                
-                if (savedValue) {
-                  console.log('Загружен сохраненный ответ:', savedValue);
-                  return {
-                    ...answer,
-                    text: savedValue.text !== undefined ? savedValue.text : answer.text,
-                    comment: savedValue.comment !== undefined ? savedValue.comment : answer.comment,
-                    photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || answer.photos), // Оставляем как base64
-                  };
-                }
-              }
-              return answer;
-            });
-            
-            setAnswers(mergedAnswers);
-          } catch (error) {
-            console.error("Ошибка загрузки сохраненных ответов:", error);
-            // Продолжаем с пустыми ответами
-          }
-        }
-        
         setLoading(false);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -150,7 +111,7 @@ const QuestionsStepper = () => {
     };
 
     fetchQuestions();
-  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question, draftId]);
+  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question]);
 
   const handleSnackbarClose = () => {
     setSuccess(false);
@@ -161,6 +122,147 @@ const QuestionsStepper = () => {
     setIsPreview(false);
     handleReview();
   }
+
+  // Загружаем все ответы при открытии Preview
+  useEffect(() => {
+    const loadAllAnswersForPreview = async () => {
+      // Загружаем только если открыт Preview, есть вопросы, draftId и еще не загружены все ответы
+      if (!isPreview || !questions.length || !draftId || loading) {
+        return;
+      }
+
+      // Проверяем, загружены ли уже все ответы
+      const allLoaded = questions.every(q => loadedQuestionIdsRef.current.has(q.id));
+      if (allLoaded) {
+        return;
+      }
+
+      setLoadingPreviewAnswers(true);
+      try {
+        const savedAnswers = await Promise.all(
+          questions.map((q) =>
+            getDraftAnswer(token, chatId || "", draftId, q.id)
+          )
+        );
+
+        // Обновляем все ответы
+        setAnswers((prevAnswers) => {
+          const newAnswers = [...prevAnswers];
+          
+          savedAnswers.forEach((saved, index) => {
+            if (saved && saved.status === "ok" && saved.value) {
+              const question = questions[index];
+              if (!question) return;
+
+              // Если value - массив, находим нужный элемент по questionId
+              let savedValue = saved.value;
+              if (Array.isArray(saved.value)) {
+                savedValue = saved.value.find(
+                  (item) => item.questionId === question.id
+                ) || saved.value[0] || null;
+              }
+
+              if (savedValue) {
+                const answerIndex = prevAnswers.findIndex(
+                  (a) => a.questionId === question.id
+                );
+
+                if (answerIndex !== -1) {
+                  newAnswers[answerIndex] = {
+                    ...newAnswers[answerIndex],
+                    text: savedValue.text !== undefined ? savedValue.text : newAnswers[answerIndex].text,
+                    comment: savedValue.comment !== undefined ? savedValue.comment : newAnswers[answerIndex].comment,
+                    photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || newAnswers[answerIndex].photos),
+                  };
+                }
+
+                // Добавляем в кеш
+                loadedQuestionIdsRef.current.add(question.id);
+              }
+            }
+          });
+
+          return newAnswers;
+        });
+      } catch (error) {
+        console.error("Ошибка загрузки сохраненных ответов для Preview:", error);
+      } finally {
+        setLoadingPreviewAnswers(false);
+      }
+    };
+
+    loadAllAnswersForPreview();
+  }, [isPreview, questions, draftId, token, chatId, loading, setAnswers]);
+
+  // Загружаем ответ на вопрос при открытии формы вопроса
+  useEffect(() => {
+    const loadAnswerForQuestion = async () => {
+      // Пропускаем загрузку, если вопросы еще не загружены, нет draftId, или это preview/review
+      if (!questions.length || !draftId || isPreview || isReview || loading) {
+        return;
+      }
+
+      const currentQuestion = questions[activeStep];
+      if (!currentQuestion) {
+        return;
+      }
+
+      const questionId = currentQuestion.id;
+      
+      // Пропускаем, если ответ уже загружен
+      if (loadedQuestionIdsRef.current.has(questionId)) {
+        return;
+      }
+
+      setLoadingAnswer(true);
+      try {
+        const response = await getDraftAnswer(token, chatId || "", draftId, questionId);
+        
+        if (response && response.status === "ok" && response.value) {
+          // Если value - массив, находим нужный элемент по questionId
+          let savedValue = response.value;
+          if (Array.isArray(response.value)) {
+            savedValue = response.value.find(
+              (item) => item.questionId === questionId
+            ) || response.value[0] || null;
+          }
+          
+          if (savedValue) {
+            console.log('Загружен сохраненный ответ для вопроса:', questionId, savedValue);
+            
+            // Обновляем ответ для текущего вопроса
+            setAnswers((prevAnswers) => {
+              const newAnswers = [...prevAnswers];
+              const answerIndex = prevAnswers.findIndex(
+                (a) => a.questionId === questionId
+              );
+              
+              if (answerIndex !== -1) {
+                newAnswers[answerIndex] = {
+                  ...newAnswers[answerIndex],
+                  text: savedValue.text !== undefined ? savedValue.text : newAnswers[answerIndex].text,
+                  comment: savedValue.comment !== undefined ? savedValue.comment : newAnswers[answerIndex].comment,
+                  photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || newAnswers[answerIndex].photos),
+                };
+              }
+              
+              return newAnswers;
+            });
+            
+            // Добавляем в кеш загруженных вопросов
+            loadedQuestionIdsRef.current.add(questionId);
+          }
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки сохраненного ответа:", error);
+        // Продолжаем работу без загрузки
+      } finally {
+        setLoadingAnswer(false);
+      }
+    };
+
+    loadAnswerForQuestion();
+  }, [activeStep, questions, draftId, token, chatId, isPreview, isReview, loading, setAnswers]);
 
   if (loading) {
     return <CircularProgress />;
@@ -184,13 +286,33 @@ const QuestionsStepper = () => {
         </Alert>
       </Snackbar>
       {isPreview ? (
-        <Preview 
-          answers={answers}
-          questions={questions}
-          handleEdit={handleEdit}
-          setIsPreview={setIsPreview}
-          handleReview={handleReviewInPreview}
-        />
+        <Box sx={{ position: "relative" }}>
+          {loadingPreviewAnswers && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                zIndex: 1,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+          <Preview 
+            answers={answers}
+            questions={questions}
+            handleEdit={handleEdit}
+            setIsPreview={setIsPreview}
+            handleReview={handleReviewInPreview}
+          />
+        </Box>
       ) : (
         <Box sx={{ p: 2 }}>
           {isReview ? (
@@ -212,37 +334,57 @@ const QuestionsStepper = () => {
               loading={savingLoading}
             />
           ) : (
-            <QuestionForm
-              questionIndex={activeStep}
-              question={questions[activeStep]}
-              answer={answers[activeStep]}
-              validationErrors={validationErrors[activeStep]}
-              handleChange={(index, field, value) =>
-                handleChange(
-                  index,
-                  field,
-                  value,
-                  token,
-                  chatId,
-                  objectId,
-                  checklistId,
-                  draftId,
-                  (id) => dispatch(setDraftId(id))
-                )
-              }
-              handleRemovePhoto={(index, photoIndex) =>
-                handleRemovePhoto(
-                  index,
-                  photoIndex,
-                  token,
-                  chatId,
-                  objectId,
-                  checklistId,
-                  draftId,
-                  (id) => dispatch(setDraftId(id))
-                )
-              }
-            />
+            <Box sx={{ position: "relative" }}>
+              {loadingAnswer && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                    zIndex: 1,
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              )}
+              <QuestionForm
+                questionIndex={activeStep}
+                question={questions[activeStep]}
+                answer={answers[activeStep]}
+                validationErrors={validationErrors[activeStep]}
+                handleChange={(index, field, value) =>
+                  handleChange(
+                    index,
+                    field,
+                    value,
+                    token,
+                    chatId,
+                    objectId,
+                    checklistId,
+                    draftId,
+                    (id) => dispatch(setDraftId(id))
+                  )
+                }
+                handleRemovePhoto={(index, photoIndex) =>
+                  handleRemovePhoto(
+                    index,
+                    photoIndex,
+                    token,
+                    chatId,
+                    objectId,
+                    checklistId,
+                    draftId,
+                    (id) => dispatch(setDraftId(id))
+                  )
+                }
+              />
+            </Box>
           )}
         </Box>
       )}

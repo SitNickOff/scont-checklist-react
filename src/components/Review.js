@@ -99,15 +99,22 @@ const Review = ({
                 <Box sx={{ mt: 2 }}>
                   <Typography>{texts.photo}</Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                    {answer.photos.map((photo, i) => (
-                      <Box key={i} sx={{ position: "relative", m: 1 }}>
-                        <img
-                          src={URL.createObjectURL(photo)}
-                          alt="Preview"
-                          style={{ maxHeight: "200px", maxWidth: "200px" }}
-                        />
-                      </Box>
-                    ))}
+                    {answer.photos.map((photo, i) => {
+                      // Если photo - это base64 строка, используем напрямую, иначе создаем ObjectURL
+                      const photoSrc = typeof photo === 'string' 
+                        ? photo 
+                        : URL.createObjectURL(photo);
+                      
+                      return (
+                        <Box key={i} sx={{ position: "relative", m: 1 }}>
+                          <img
+                            src={photoSrc}
+                            alt="Preview"
+                            style={{ maxHeight: "200px", maxWidth: "200px" }}
+                          />
+                        </Box>
+                      );
+                    })}
                   </Box>
                 </Box>
               )}
