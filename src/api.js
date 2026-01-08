@@ -22,7 +22,7 @@ export const getChecklists = async (token, chat_id, objectId) => {
 };
 
 export const getQuestions = async (token, chat_id, checklistId) => {
-    const response = await api.post(`/questions`, {
+    const response = await api.post(`/questions2`, {
         token,
         chat_id,
         checklistId 

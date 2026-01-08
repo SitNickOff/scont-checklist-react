@@ -6,12 +6,17 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   MobileStepper,
   Snackbar,
 } from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { useQuestions } from "../hooks/useQuestions";
-import { getQuestions, getDraftAnswer } from "../api";
+import { getQuestions, getDraftAnswer, deleteDraft } from "../api";
 import QuestionForm from "./QuestionForm";
 import Review from "./Review";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +46,12 @@ const QuestionsStepper = () => {
   const [isPreview, setIsPreview] = useState(true); // Управление первым превью
   const [loadingAnswer, setLoadingAnswer] = useState(false); // Загрузка ответа на текущий вопрос
   const [loadingPreviewAnswers, setLoadingPreviewAnswers] = useState(false); // Загрузка всех ответов для Preview
+  const [showDraftDialog, setShowDraftDialog] = useState(false); // Показывать диалог выбора действия с черновиком
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false); // Показывать диалог подтверждения удаления
+  const [draftIdFromServer, setDraftIdFromServer] = useState(null); // draft_id из ответа сервера
+  const [draftDate, setDraftDate] = useState(null); // Дата создания черновика
   const loadedQuestionIdsRef = useRef(new Set()); // Кеш загруженных вопросов
+  const isFirstLoadRef = useRef(true); // Флаг первой загрузки
   const { chatId, token, objectId, checklistId, lang, draftId } = useSelector(
     (state) => state.app
   );
@@ -77,10 +87,42 @@ const QuestionsStepper = () => {
       try {
         const data = await getQuestions(token, chatId, checklistId);
 
-        const questionsData = data.map((i, index) => ({
+        // Проверяем наличие черновиков только при первой загрузке
+        // Не меняем isPreview, если пользователь уже на форме вопроса
+        if (isFirstLoadRef.current) {
+          isFirstLoadRef.current = false;
+          const drafts = data.drafts;
+          // Используем draftId из Redux для проверки
+          const currentDraftId = useSelector.getState ? useSelector.getState().app.draftId : null;
+          if (drafts && !currentDraftId) {
+            // Если drafts - строка, преобразуем в массив
+            const draftIds = typeof drafts === 'string' ? [drafts] : (Array.isArray(drafts) ? drafts : []);
+            
+            if (draftIds.length > 0) {
+              // Берем первый черновик
+              const firstDraftId = draftIds[0];
+              setDraftIdFromServer(firstDraftId);
+              
+              // TODO: Получить дату создания черновика из API
+              // Пока используем текущую дату как заглушку
+              setDraftDate(new Date());
+              setShowDraftDialog(true);
+              setIsPreview(false);
+            } else {
+              // Если черновиков нет, показываем preview
+              setIsPreview(true);
+            }
+          } else {
+            // Если черновиков нет, показываем preview
+            setIsPreview(true);
+          }
+        }
+        // После первой загрузки не меняем состояние isPreview
+
+        const questionsData = data.questions.map((i, index) => ({
           id: i.yardstick,
           name: `${texts.question} ${index + 1}`,
-          text: i.yardstick_name_for_report,
+          text: i.yardstick_name_for_report || "", // Обрабатываем null
           options: [...i.scores],
           optionDescriptions: i.teh_values_descriptions
             ? [...i.teh_values_descriptions]
@@ -89,12 +131,12 @@ const QuestionsStepper = () => {
           requirePhoto: i.req_files,
           required: i.required,
           multi: i.multi,
-          links: i.links
+          links: i.links || []
         }));
 
         setQuestions(questionsData);
         
-        const initialAnswers = data.map((i) => ({
+        const initialAnswers = data.questions.map((i) => ({
           text: i.multi === "single" ? "" : [],
           comment: "",
           photos: [],
@@ -102,7 +144,7 @@ const QuestionsStepper = () => {
         }));
         
         setAnswers(initialAnswers);
-        setMaxSteps(data.length);
+        setMaxSteps(data.questions.length);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -111,7 +153,8 @@ const QuestionsStepper = () => {
     };
 
     fetchQuestions();
-  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question, dispatch]);
 
   const handleSnackbarClose = () => {
     setSuccess(false);
@@ -121,6 +164,53 @@ const QuestionsStepper = () => {
   const handleReviewInPreview = () => {
     setIsPreview(false);
     handleReview();
+  }
+
+  const handleContinueDraft = () => {
+    // Устанавливаем draft_id и переходим к preview
+    dispatch(setDraftId(draftIdFromServer));
+    setShowDraftDialog(false);
+    setIsPreview(true);
+  }
+
+  const handleStartNew = () => {
+    // Показываем диалог подтверждения удаления
+    setShowDraftDialog(false);
+    setShowDeleteConfirmDialog(true);
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      // Удаляем черновик
+      await deleteDraft(token, chatId || "", draftIdFromServer);
+      // Очищаем draftId и переходим к preview
+      dispatch(setDraftId(null));
+      setShowDeleteConfirmDialog(false);
+      setIsPreview(true);
+    } catch (error) {
+      console.error("Ошибка удаления черновика:", error);
+      // В случае ошибки все равно переходим к preview
+      dispatch(setDraftId(null));
+      setShowDeleteConfirmDialog(false);
+      setIsPreview(true);
+    }
+  }
+
+  const handleCancelDelete = () => {
+    // Просто закрываем диалог, ничего не делаем
+    setShowDeleteConfirmDialog(false);
+    setShowDraftDialog(true); // Возвращаемся к диалогу выбора
+  }
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} в ${hours}:${minutes}`;
   }
 
   // Загружаем все ответы при открытии Preview
@@ -270,6 +360,50 @@ const QuestionsStepper = () => {
 
   return (
     <Box sx={{ width: "100%" }}>
+      {/* Диалог выбора действия с черновиком */}
+      <Dialog open={showDraftDialog} onClose={() => {}}>
+        <DialogTitle>
+          {lang === 'ru' ? 'Незавершенный чек-лист' : 'Incomplete checklist'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {lang === 'ru' 
+              ? `Ранее Вы начали заполнять чек-лист, но не завершили его заполнение (${formatDate(draftDate)}).`
+              : `You previously started filling out the checklist but did not complete it (${formatDate(draftDate)}).`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleStartNew} color="primary">
+            {lang === 'ru' ? 'Начать заново' : 'Start over'}
+          </Button>
+          <Button onClick={handleContinueDraft} color="primary" variant="contained" autoFocus>
+            {lang === 'ru' ? 'Продолжить заполнение' : 'Continue filling'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Диалог подтверждения удаления черновика */}
+      <Dialog open={showDeleteConfirmDialog} onClose={handleCancelDelete}>
+        <DialogTitle>
+          {lang === 'ru' ? 'Подтверждение удаления' : 'Confirm deletion'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {lang === 'ru' 
+              ? 'Удалить черновик чек-листа?'
+              : 'Delete checklist draft?'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            {lang === 'ru' ? 'Нет' : 'No'}
+          </Button>
+          <Button onClick={handleConfirmDelete} color="secondary" variant="contained" autoFocus>
+            {lang === 'ru' ? 'Да' : 'Yes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={success}
         autoHideDuration={6000}
