@@ -11,7 +11,7 @@ import HomeButton from "./HomeButton";
 
 const messages = {
   ru: {
-    previewTitle: "Превью вопросов",
+    previewTitle: "Список вопросов",
     edit: "Редактировать",
     fill: "Заполнить",
     startFilling: "Начать заполнение",

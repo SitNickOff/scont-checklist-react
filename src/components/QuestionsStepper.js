@@ -49,7 +49,6 @@ const QuestionsStepper = () => {
   const [showDraftDialog, setShowDraftDialog] = useState(false); // Показывать диалог выбора действия с черновиком
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false); // Показывать диалог подтверждения удаления
   const [draftIdFromServer, setDraftIdFromServer] = useState(null); // draft_id из ответа сервера
-  const [draftDate, setDraftDate] = useState(null); // Дата создания черновика
   const loadedQuestionIdsRef = useRef(new Set()); // Кеш загруженных вопросов
   const isFirstLoadRef = useRef(true); // Флаг первой загрузки
   const { chatId, token, objectId, checklistId, lang, draftId } = useSelector(
@@ -102,10 +101,6 @@ const QuestionsStepper = () => {
               // Берем первый черновик
               const firstDraftId = draftIds[0];
               setDraftIdFromServer(firstDraftId);
-              
-              // TODO: Получить дату создания черновика из API
-              // Пока используем текущую дату как заглушку
-              setDraftDate(new Date());
               setShowDraftDialog(true);
               setIsPreview(false);
             } else {
@@ -181,15 +176,18 @@ const QuestionsStepper = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      // Удаляем черновик
-      await deleteDraft(token, chatId || "", draftIdFromServer);
+      // Удаляем черновик (используем draftIdFromServer или draftId из Redux)
+      const draftToDelete = draftIdFromServer || draftId;
+      if (draftToDelete) {
+        await deleteDraft(token, chatId || "", draftToDelete);
+      }
       // Очищаем draftId и переходим к preview
       dispatch(setDraftId(null));
       setShowDeleteConfirmDialog(false);
       setIsPreview(true);
     } catch (error) {
       console.error("Ошибка удаления черновика:", error);
-      // В случае ошибки все равно переходим к preview
+      // В случае ошибки все равно очищаем draftId и переходим к preview
       dispatch(setDraftId(null));
       setShowDeleteConfirmDialog(false);
       setIsPreview(true);
@@ -200,17 +198,6 @@ const QuestionsStepper = () => {
     // Просто закрываем диалог, ничего не делаем
     setShowDeleteConfirmDialog(false);
     setShowDraftDialog(true); // Возвращаемся к диалогу выбора
-  }
-
-  const formatDate = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day}.${month}.${year} в ${hours}:${minutes}`;
   }
 
   // Загружаем все ответы при открытии Preview
@@ -368,8 +355,8 @@ const QuestionsStepper = () => {
         <DialogContent>
           <DialogContentText>
             {lang === 'ru' 
-              ? `Ранее Вы начали заполнять чек-лист, но не завершили его заполнение (${formatDate(draftDate)}).`
-              : `You previously started filling out the checklist but did not complete it (${formatDate(draftDate)}).`}
+              ? 'Ранее Вы начали заполнять чек-лист, но не завершили его заполнение.'
+              : 'You previously started filling out the checklist but did not complete it.'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

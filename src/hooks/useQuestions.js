@@ -215,12 +215,16 @@ export const useQuestions = () => {
           console.log({ response });
           
           // Очищаем draft_id после успешного завершения
-          if (response.status === "ok" && clearDraftId) {
-            clearDraftId();
+          if (response.status === "ok") {
+            if (clearDraftId) {
+              clearDraftId();
+            }
+            setLoading(false);
+            setSuccess(true);
+          } else {
+            setLoading(false);
+            alert("Ошибка при завершении черновика. Пожалуйста, попробуйте снова.");
           }
-          
-          setLoading(false);
-          setSuccess(true);
         } else {
           // Fallback на старый метод, если draft_id нет (не должно происходить)
           alert("Ошибка: черновик не найден. Пожалуйста, попробуйте снова.");
