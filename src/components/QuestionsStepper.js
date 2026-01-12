@@ -122,8 +122,8 @@ const QuestionsStepper = () => {
           optionDescriptions: i.teh_values_descriptions
             ? [...i.teh_values_descriptions]
             : [],
-          requireComment: i.req_comments,
-          requirePhoto: i.req_files,
+          requireComment: i.has_comments ? i.req_comments : false,
+          requirePhoto: i.has_files ? i.req_files : false,
           required: i.required,
           multi: i.multi,
           links: i.links || [],
