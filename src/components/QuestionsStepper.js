@@ -126,7 +126,9 @@ const QuestionsStepper = () => {
           requirePhoto: i.req_files,
           required: i.required,
           multi: i.multi,
-          links: i.links || []
+          links: i.links || [],
+          has_files: i.has_files,
+          has_comments: i.has_comments
         }));
 
         setQuestions(questionsData);

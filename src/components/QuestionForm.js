@@ -204,7 +204,7 @@ const QuestionForm = ({
         </Box>
       )}
 
-      <TextField
+      {question.has_comments && <TextField
         label={texts.comment}
         fullWidth
         value={answer.comment}
@@ -212,8 +212,8 @@ const QuestionForm = ({
         margin="normal"
         required={question.requireComment}
         error={question.requireComment && !answer.comment}
-      />
-      <Button 
+      />}
+      {question.has_files && <Button 
         variant="contained" 
         component="label" 
         sx={{ 
@@ -240,8 +240,8 @@ const QuestionForm = ({
           accept="image/*" // Ограничение на изображения
           capture // ="environment" // Открытие камеры по умолчанию
         />
-      </Button>
-      {!only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
+      </Button>}
+      {question.has_files && !only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
         <AddPhotoAlternateIcon
           sx={
             {
