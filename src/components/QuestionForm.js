@@ -216,6 +216,7 @@ const QuestionForm = ({
       {question.has_files && <Button 
         variant="contained" 
         component="label" 
+        color={question.requirePhoto ? "error" : "primary"}
         sx={{ 
           mt: 2, 
           mr: 1,
@@ -241,7 +242,12 @@ const QuestionForm = ({
           capture // ="environment" // Открытие камеры по умолчанию
         />
       </Button>}
-      {question.has_files && !only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
+      {question.has_files && !only_cam_inspector_bot && <Button 
+        variant="contained" 
+        component="label" 
+        color={question.requirePhoto ? "error" : "primary"}
+        sx={{ mt: 2 }}
+      >
         <AddPhotoAlternateIcon
           sx={
             {
