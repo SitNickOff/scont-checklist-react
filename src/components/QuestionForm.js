@@ -204,7 +204,7 @@ const QuestionForm = ({
         </Box>
       )}
 
-      <TextField
+      {question.has_comments && <TextField
         label={texts.comment}
         fullWidth
         value={answer.comment}
@@ -212,8 +212,8 @@ const QuestionForm = ({
         margin="normal"
         required={question.requireComment}
         error={question.requireComment && !answer.comment}
-      />
-      <Button 
+      />}
+      {question.has_files && <Button 
         variant="contained" 
         component="label" 
         sx={{ 
@@ -240,8 +240,8 @@ const QuestionForm = ({
           accept="image/*" // Ограничение на изображения
           capture // ="environment" // Открытие камеры по умолчанию
         />
-      </Button>
-      {!only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
+      </Button>}
+      {question.has_files && !only_cam_inspector_bot && <Button variant="contained" component="label" sx={{ mt: 2 }}>
         <AddPhotoAlternateIcon
           sx={
             {
@@ -265,10 +265,16 @@ const QuestionForm = ({
         <Box sx={{ mt: 2 }}>
           <Typography>{texts.photos}</Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-            {answer.photos.map((photo, index) => (
+            {answer.photos.map((photo, index) => {
+              // Если photo - это base64 строка, используем напрямую, иначе создаем ObjectURL
+              const photoSrc = typeof photo === 'string' 
+                ? photo 
+                : URL.createObjectURL(photo);
+              
+              return (
               <Box key={index} sx={{ position: "relative", m: 1 }}>
                 <img
-                  src={URL.createObjectURL(photo)}
+                  src={photoSrc}
                   alt="Preview"
                   style={{ maxHeight: "200px", maxWidth: "200px" }}
                 />
@@ -286,7 +292,8 @@ const QuestionForm = ({
                   <DeleteIcon />
                 </IconButton>
               </Box>
-            ))}
+              );
+            })}
           </Box>
         </Box>
       )}
