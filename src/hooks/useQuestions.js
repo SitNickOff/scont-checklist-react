@@ -13,6 +13,8 @@ export const useQuestions = () => {
   
   // Ref для хранения debounce таймеров
   const debounceTimers = useRef({});
+  // Ref для хранения сгенерированного draftId (защита от StrictMode)
+  const generatedDraftIdRef = useRef(null);
 
   const validateAnswers = (answers) => {
     return answers.map((answer, index) => {
@@ -85,6 +87,19 @@ export const useQuestions = () => {
     });
   }, []);
 
+  // Генерация draftId на основе даты/времени и chatId
+  const generateDraftId = useCallback((chatId) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
+    return `${timestamp}_${chatId || 'unknown'}`;
+  }, []);
+
   const saveAnswerToDraft = async (
     answer,
     questionId,
@@ -96,6 +111,20 @@ export const useQuestions = () => {
     setDraftId
   ) => {
     try {
+      // Если draftId нет, генерируем его один раз
+      let currentDraftId = draftId;
+      if (!currentDraftId) {
+        // Используем ref для защиты от StrictMode (избегаем двойной генерации)
+        if (!generatedDraftIdRef.current) {
+          generatedDraftIdRef.current = generateDraftId(chatId);
+        }
+        currentDraftId = generatedDraftIdRef.current;
+        // Сохраняем сгенерированный draftId в Redux
+        if (setDraftId) {
+          setDraftId(currentDraftId);
+        }
+      }
+
       // Конвертируем фотографии в base64
       const photos = await Promise.all(
         (answer.photos || []).map((photo) => {
@@ -121,13 +150,16 @@ export const useQuestions = () => {
         answerData,
         objectId,
         checklistId,
-        draftId,
+        currentDraftId,
         questionId || answer.questionId
       );
 
-      // Если получили draft_id - сохранить в Redux
-      if (response.draft_id && !draftId) {
-        setDraftId(response.draft_id);
+      // Если сервер вернул draft_id и он отличается от нашего - используем серверный
+      if (response.draft_id && response.draft_id !== currentDraftId) {
+        if (setDraftId) {
+          setDraftId(response.draft_id);
+        }
+        generatedDraftIdRef.current = response.draft_id;
       }
     } catch (error) {
       console.error("Ошибка сохранения черновика:", error);
@@ -155,6 +187,20 @@ export const useQuestions = () => {
     // Устанавливаем новый таймер
     debounceTimers.current[timerKey] = setTimeout(async () => {
       try {
+        // Если draftId нет, генерируем его один раз
+        let currentDraftId = draftId;
+        if (!currentDraftId) {
+          // Используем ref для защиты от StrictMode (избегаем двойной генерации)
+          if (!generatedDraftIdRef.current) {
+            generatedDraftIdRef.current = generateDraftId(chatId);
+          }
+          currentDraftId = generatedDraftIdRef.current;
+          // Сохраняем сгенерированный draftId в Redux
+          if (setDraftId) {
+            setDraftId(currentDraftId);
+          }
+        }
+
         // Конвертируем фотографии в base64
         const photos = await Promise.all(
           (answer.photos || []).map((photo) => {
@@ -180,13 +226,16 @@ export const useQuestions = () => {
           answerData,
           objectId,
           checklistId,
-          draftId,
+          currentDraftId,
           questionId || answer.questionId
         );
 
-        // Если получили draft_id - сохранить в Redux
-        if (response.draft_id && !draftId) {
-          setDraftId(response.draft_id);
+        // Если сервер вернул draft_id и он отличается от нашего - используем серверный
+        if (response.draft_id && response.draft_id !== currentDraftId) {
+          if (setDraftId) {
+            setDraftId(response.draft_id);
+          }
+          generatedDraftIdRef.current = response.draft_id;
         }
       } catch (error) {
         console.error("Ошибка сохранения черновика:", error);
@@ -194,7 +243,7 @@ export const useQuestions = () => {
       }
       delete debounceTimers.current[timerKey];
     }, 1000); // Debounce 1 секунда
-  }, [convertFileToBase64]);
+  }, [convertFileToBase64, generateDraftId]);
 
   const handleSave = async (chatId, token, selectedUnit, selectedModel, draftId, clearDraftId) => {
     const errors = validateAnswers(answers);
@@ -219,6 +268,8 @@ export const useQuestions = () => {
             if (clearDraftId) {
               clearDraftId();
             }
+            // Очищаем ref для следующего использования
+            generatedDraftIdRef.current = null;
             setLoading(false);
             setSuccess(true);
           } else {
