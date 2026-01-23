@@ -9,6 +9,8 @@ import {
   IconButton,
   Box,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +22,8 @@ import { CHECKLIST, MODELS, SELECT } from "./messages";
 const ChecklistList = () => {
   const [checklists, setChecklists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { chatId, token, objectId, lang } = useSelector((state) => state.app);
@@ -28,7 +32,15 @@ const ChecklistList = () => {
     const fetchChecklists = async () => {
       try {
         const data = await getChecklists(token, chatId, objectId);
-        setChecklists(data);
+        
+        // Проверяем, есть ли статус "Заполнение чек-листа не допускается"
+        if (data && data.status === "Заполнение чек-листа не допускается") {
+          setSnackbarMessage(data.status);
+          setSnackbarOpen(true);
+          setChecklists([]);
+        } else {
+          setChecklists(data);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching checklists:", error);
@@ -45,6 +57,11 @@ const ChecklistList = () => {
   };
 
   const handleGoHome = () => {
+    navigate("/");
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
     navigate("/");
   };
 
@@ -87,6 +104,22 @@ const ChecklistList = () => {
           </ListItem>
         ))}
       </List>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="warning"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
