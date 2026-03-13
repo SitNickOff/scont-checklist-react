@@ -1,5 +1,7 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
 
+const PERSIST_KEY = 'scont_checklist_app_state';
+
 const initialState = {
     chatId: null,
     token: null,
@@ -7,7 +9,27 @@ const initialState = {
     checklistId: null,
     draftId: null,
     only_cam_inspector_bot: false,
-    lang: 'ru' 
+    lang: 'ru'
+};
+
+const loadState = () => {
+    try {
+        const serialized = localStorage.getItem(PERSIST_KEY);
+        if (serialized == null) return undefined;
+        const parsed = JSON.parse(serialized);
+        return { ...initialState, ...parsed };
+    } catch {
+        return undefined;
+    }
+};
+
+const saveState = (state) => {
+    try {
+        const toSave = state.app;
+        localStorage.setItem(PERSIST_KEY, JSON.stringify(toSave));
+    } catch {
+        // ignore write errors
+    }
 };
 
 const appSlice = createSlice({
@@ -38,10 +60,15 @@ const appSlice = createSlice({
 
 export const { setChatId, setToken, setObjectId, setChecklistId, setLang, setDraftId } = appSlice.actions;
 
+const persistedAppState = loadState();
+
 const store = configureStore({
     reducer: {
         app: appSlice.reducer,
     },
+    preloadedState: persistedAppState !== undefined ? { app: persistedAppState } : undefined,
 });
+
+store.subscribe(() => saveState(store.getState()));
 
 export default store;
