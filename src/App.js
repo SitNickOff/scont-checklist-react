@@ -101,7 +101,7 @@ const App = () => {
               <Route path="/objects" element={<ObjectsList />} />
               <Route path="/checklists" element={<ChecklistList />} />
               <Route path="/questions" element={<QuestionsStepper />} />
-              <Route path="*" element={<Navigate to="/objects" />} />
+              <Route path="*" element={<Navigate to={`/objects${window.location.search || ''}`} />} />
             </>
           ) : (
             <Route path="*" element={<div>Loading...</div>} />
