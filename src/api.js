@@ -4,33 +4,36 @@ const api = axios.create({
   baseURL: 'https://server.salescontrol.kz/api/',
 });
 
-export const getObjects = async (token, chat_id) => {
+export const getObjects = async (token, chat_id, agent) => {
     const response = await api.post('/objects', {
         token,
-        chat_id 
+        chat_id,
+        agent,
     });
     return response.data;
 };
 
-export const getChecklists = async (token, chat_id, objectId) => {
+export const getChecklists = async (token, chat_id, objectId, agent) => {
     const response = await api.post(`/checklists`, {
         token,
         chat_id,
-        objectId 
+        objectId,
+        agent,
     });
     return response.data;
 };
 
-export const getQuestions = async (token, chat_id, checklistId) => {
+export const getQuestions = async (token, chat_id, checklistId, agent) => {
     const response = await api.post(`/questions2`, {
         token,
         chat_id,
-        checklistId 
+        checklistId,
+        agent,
     });
     return response.data;
 };
 
-export const sendDraftAnswer = async (token, chat_id, answer, selected_unit, selected_model, draft_id, questionId) => {
+export const sendDraftAnswer = async (token, chat_id, answer, selected_unit, selected_model, draft_id, questionId, agent) => {
     const response = await api.post('/draft/send_answer', {
         token,
         chat_id: chat_id || "",
@@ -38,35 +41,39 @@ export const sendDraftAnswer = async (token, chat_id, answer, selected_unit, sel
         selected_unit,
         selected_model,
         draft_id: draft_id || undefined,
-        questionId
+        questionId,
+        agent,
     });
     return response.data;
 };
 
-export const getDraftAnswer = async (token, chat_id, draft_id, questionId) => {
+export const getDraftAnswer = async (token, chat_id, draft_id, questionId, agent) => {
     const response = await api.post('/draft/get_answer', {
         token,
         chat_id: chat_id || "",
         draft_id,
-        questionId
+        questionId,
+        agent,
     });
     return response.data;
 };
 
-export const deleteDraft = async (token, chat_id, draft_id) => {
+export const deleteDraft = async (token, chat_id, draft_id, agent) => {
     const response = await api.post('/draft/delete', {
         token,
         chat_id: chat_id || "",
-        draft_id
+        draft_id,
+        agent,
     });
     return response.data;
 };
 
-export const doneDraft = async (token, chat_id, draft_id) => {
+export const doneDraft = async (token, chat_id, draft_id, agent) => {
     const response = await api.post('/draft/done', {
         token,
         chat_id: chat_id || "",
-        draft_id
+        draft_id,
+        agent,
     });
     return response.data;
 };

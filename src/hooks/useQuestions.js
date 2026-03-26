@@ -37,7 +37,7 @@ export const useQuestions = () => {
     });
   };
 
-  const handleNext = async (token, chatId, objectId, checklistId, draftId, setDraftId) => {
+  const handleNext = async (token, chatId, agent, objectId, checklistId, draftId, setDraftId) => {
     // Сохраняем текущий ответ перед переходом (только если вопросы загружены)
     if (!isReview && answers[activeStep] && questions.length > 0 && questions[activeStep]) {
       await saveAnswerToDraft(
@@ -45,6 +45,7 @@ export const useQuestions = () => {
         questions[activeStep].id,
         token,
         chatId,
+        agent,
         objectId,
         checklistId,
         draftId,
@@ -105,6 +106,7 @@ export const useQuestions = () => {
     questionId,
     token,
     chatId,
+    agent,
     objectId,
     checklistId,
     draftId,
@@ -151,7 +153,8 @@ export const useQuestions = () => {
         objectId,
         checklistId,
         currentDraftId,
-        questionId || answer.questionId
+        questionId || answer.questionId,
+        agent
       );
 
       // Если сервер вернул draft_id и он отличается от нашего - используем серверный
@@ -172,6 +175,7 @@ export const useQuestions = () => {
     questionId,
     token,
     chatId,
+    agent,
     objectId,
     checklistId,
     draftId,
@@ -227,7 +231,8 @@ export const useQuestions = () => {
           objectId,
           checklistId,
           currentDraftId,
-          questionId || answer.questionId
+          questionId || answer.questionId,
+          agent
         );
 
         // Если сервер вернул draft_id и он отличается от нашего - используем серверный
@@ -245,7 +250,7 @@ export const useQuestions = () => {
     }, 1000); // Debounce 1 секунда
   }, [convertFileToBase64, generateDraftId]);
 
-  const handleSave = async (chatId, token, selectedUnit, selectedModel, draftId, clearDraftId) => {
+  const handleSave = async (chatId, token, agent, selectedUnit, selectedModel, draftId, clearDraftId) => {
     const errors = validateAnswers(answers);
     setValidationErrors(errors);
     const hasErrors = errors.some(
@@ -260,7 +265,7 @@ export const useQuestions = () => {
         
         // Если есть draft_id, используем /draft/done
         if (draftId) {
-          const response = await doneDraft(token, chatId || "", draftId);
+          const response = await doneDraft(token, chatId || "", draftId, agent);
           console.log({ response });
           
           // Очищаем draft_id после успешного завершения
@@ -294,6 +299,7 @@ export const useQuestions = () => {
     value,
     token,
     chatId,
+    agent,
     objectId,
     checklistId,
     draftId,
@@ -310,6 +316,7 @@ export const useQuestions = () => {
           questions[index].id,
           token,
           chatId,
+          agent,
           objectId,
           checklistId,
           draftId,
@@ -331,6 +338,7 @@ export const useQuestions = () => {
     photoIndex,
     token,
     chatId,
+    agent,
     objectId,
     checklistId,
     draftId,
@@ -349,6 +357,7 @@ export const useQuestions = () => {
           questions[index].id,
           token,
           chatId,
+          agent,
           objectId,
           checklistId,
           draftId,

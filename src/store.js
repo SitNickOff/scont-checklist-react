@@ -5,6 +5,7 @@ const PERSIST_KEY = 'scont_checklist_app_state';
 const initialState = {
     chatId: null,
     token: null,
+    agent: 'telegram',
     objectId: null,
     checklistId: null,
     draftId: null,
@@ -42,6 +43,9 @@ const appSlice = createSlice({
         setToken: (state, action) => {
             state.token = action.payload;
         },
+        setAgent: (state, action) => {
+            state.agent = action.payload;
+        },
         setObjectId: (state, action) => {
             state.objectId = action.payload;
         },
@@ -58,7 +62,7 @@ const appSlice = createSlice({
     },
 });
 
-export const { setChatId, setToken, setObjectId, setChecklistId, setLang, setDraftId } = appSlice.actions;
+export const { setChatId, setToken, setAgent, setObjectId, setChecklistId, setLang, setDraftId } = appSlice.actions;
 
 const persistedAppState = loadState();
 

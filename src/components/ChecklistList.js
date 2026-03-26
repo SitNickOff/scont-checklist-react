@@ -26,12 +26,12 @@ const ChecklistList = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { chatId, token, objectId, lang } = useSelector((state) => state.app);
+  const { chatId, token, objectId, lang, agent } = useSelector((state) => state.app);
 
   useEffect(() => {
     const fetchChecklists = async () => {
       try {
-        const data = await getChecklists(token, chatId, objectId);
+        const data = await getChecklists(token, chatId, objectId, agent);
         
         // Проверяем, есть ли статус "Заполнение чек-листа не допускается"
         if (data && data.status === "Заполнение чек-листа не допускается") {
@@ -49,7 +49,7 @@ const ChecklistList = () => {
     };
 
     fetchChecklists();
-  }, [objectId, chatId, token]);
+  }, [objectId, chatId, token, agent]);
 
   const handleSelectChecklist = (checklistId, only_cam_inspector_bot) => {
     dispatch(setChecklistId({checklistId, only_cam_inspector_bot}));
