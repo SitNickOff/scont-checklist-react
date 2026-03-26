@@ -51,7 +51,7 @@ const QuestionsStepper = () => {
   const [draftIdFromServer, setDraftIdFromServer] = useState(null); // draft_id из ответа сервера
   const loadedQuestionIdsRef = useRef(new Set()); // Кеш загруженных вопросов
   const isFirstLoadRef = useRef(true); // Флаг первой загрузки
-  const { chatId, token, objectId, checklistId, lang, draftId } = useSelector(
+  const { chatId, token, objectId, checklistId, lang, draftId, agent } = useSelector(
     (state) => state.app
   );
   const texts = messages[lang];
@@ -84,7 +84,7 @@ const QuestionsStepper = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const data = await getQuestions(token, chatId, checklistId);
+        const data = await getQuestions(token, chatId, checklistId, agent);
 
         // Проверяем наличие черновиков только при первой загрузке
         // Не меняем isPreview, если пользователь уже на форме вопроса
@@ -151,7 +151,7 @@ const QuestionsStepper = () => {
 
     fetchQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checklistId, chatId, token, setAnswers, setMaxSteps, setQuestions, texts.question, dispatch]);
+  }, [checklistId, chatId, token, agent, setAnswers, setMaxSteps, setQuestions, texts.question, dispatch]);
 
   const handleSnackbarClose = () => {
     setSuccess(false);
@@ -181,7 +181,7 @@ const QuestionsStepper = () => {
       // Удаляем черновик (используем draftIdFromServer или draftId из Redux)
       const draftToDelete = draftIdFromServer || draftId;
       if (draftToDelete) {
-        await deleteDraft(token, chatId || "", draftToDelete);
+        await deleteDraft(token, chatId || "", draftToDelete, agent);
       }
       // Очищаем draftId и переходим к preview
       dispatch(setDraftId(null));
@@ -220,7 +220,7 @@ const QuestionsStepper = () => {
       try {
         const savedAnswers = await Promise.all(
           questions.map((q) =>
-            getDraftAnswer(token, chatId || "", draftId, q.id)
+            getDraftAnswer(token, chatId || "", draftId, q.id, agent)
           )
         );
 
@@ -271,7 +271,7 @@ const QuestionsStepper = () => {
     };
 
     loadAllAnswersForPreview();
-  }, [isPreview, questions, draftId, token, chatId, loading, setAnswers]);
+  }, [isPreview, questions, draftId, token, chatId, agent, loading, setAnswers]);
 
   // Загружаем ответ на вопрос при открытии формы вопроса
   useEffect(() => {
@@ -295,7 +295,7 @@ const QuestionsStepper = () => {
 
       setLoadingAnswer(true);
       try {
-        const response = await getDraftAnswer(token, chatId || "", draftId, questionId);
+        const response = await getDraftAnswer(token, chatId || "", draftId, questionId, agent);
         
         if (response && response.status === "ok" && response.value) {
           // Если value - массив, находим нужный элемент по questionId
@@ -341,7 +341,7 @@ const QuestionsStepper = () => {
     };
 
     loadAnswerForQuestion();
-  }, [activeStep, questions, draftId, token, chatId, isPreview, isReview, loading, setAnswers]);
+  }, [activeStep, questions, draftId, token, chatId, agent, isPreview, isReview, loading, setAnswers]);
 
   if (loading) {
     return <CircularProgress />;
@@ -448,6 +448,7 @@ const QuestionsStepper = () => {
                 handleSave(
                   chatId,
                   token,
+                    agent,
                   objectId,
                   checklistId,
                   draftId,
@@ -488,6 +489,7 @@ const QuestionsStepper = () => {
                     value,
                     token,
                     chatId,
+                    agent,
                     objectId,
                     checklistId,
                     draftId,
@@ -500,6 +502,7 @@ const QuestionsStepper = () => {
                     photoIndex,
                     token,
                     chatId,
+                    agent,
                     objectId,
                     checklistId,
                     draftId,
@@ -524,6 +527,7 @@ const QuestionsStepper = () => {
                 handleNext(
                   token,
                   chatId,
+                  agent,
                   objectId,
                   checklistId,
                   draftId,
