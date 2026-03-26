@@ -20,12 +20,12 @@ const ObjectsList = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { chatId, token, lang } = useSelector((state) => state.app);
+  const { chatId, token, lang, agent } = useSelector((state) => state.app);
 
   useEffect(() => {
     const fetchObjects = async () => {
       try {
-        const data = await getObjects(token, chatId);
+        const data = await getObjects(token, chatId, agent);
         setObjects(data);
         setLoading(false);
       } catch (error) {
@@ -35,7 +35,7 @@ const ObjectsList = () => {
     };
 
     fetchObjects();
-  }, [chatId, token]);
+  }, [chatId, token, agent]);
 
   const handleSelectObject = (objectId) => {
     dispatch(setObjectId(objectId));
