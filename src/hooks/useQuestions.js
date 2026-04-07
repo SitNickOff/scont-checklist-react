@@ -265,7 +265,13 @@ export const useQuestions = () => {
         
         // Если есть draft_id, используем /draft/done
         if (draftId) {
-          const response = await doneDraft(token, chatId || "", draftId, agent);
+          const response = await doneDraft(
+            token,
+            chatId || "",
+            draftId,
+            agent,
+            questions
+          );
           console.log({ response });
           
           // Очищаем draft_id после успешного завершения
@@ -288,7 +294,11 @@ export const useQuestions = () => {
         }
       } catch (error) {
         setLoading(false);
-        alert("Ошибка при отправке. Пожалуйста, попробуйте снова.");
+        if (error && error.code === "INCOMPLETE_DRAFT") {
+          alert(error.message);
+        } else {
+          alert("Ошибка при отправке. Пожалуйста, попробуйте снова.");
+        }
       }
     }
   };
