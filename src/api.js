@@ -107,6 +107,16 @@ export const deleteDraft = async (token, chat_id, draft_id, agent) => {
     return response.data;
 };
 
+export const uploadVideo = async (token, chat_id, video, agent) => {
+    const response = await api.post('/video/upload', {
+        token,
+        chat_id: chat_id || '',
+        video,
+        agent,
+    });
+    return response.data;
+};
+
 export const doneDraft = async (token, chat_id, draft_id, agent, questions = []) => {
     if (questions.length > 0) {
         const responses = await Promise.all(
