@@ -62,6 +62,22 @@ const formatSentAt = (iso, lang) => {
   }
 };
 
+const MIME_TO_FORMAT = {
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+  'video/webm': 'webm',
+  'video/3gpp': '3gp',
+  'video/x-m4v': 'm4v',
+};
+
+const getVideoFormat = (file) => {
+  const fromMime = MIME_TO_FORMAT[file.type?.toLowerCase()];
+  if (fromMime) return fromMime;
+
+  const ext = file.name?.split('.').pop()?.toLowerCase();
+  return ext || null;
+};
+
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -132,16 +148,18 @@ const VideoUploadPage = () => {
     setSuccessMessage('');
 
     const sentAt = new Date().toISOString();
+    const format = getVideoFormat(selectedFile);
     const entryBase = {
       id: `${Date.now()}`,
       name: selectedFile.name,
       size: selectedFile.size,
+      format,
       sentAt,
     };
 
     try {
       const videoBase64 = await fileToBase64(selectedFile);
-      const data = await uploadVideo(token, chatId, videoBase64, agent);
+      const data = await uploadVideo(token, chatId, videoBase64, format, agent);
 
       const entry = {
         ...entryBase,

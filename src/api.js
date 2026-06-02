@@ -107,11 +107,12 @@ export const deleteDraft = async (token, chat_id, draft_id, agent) => {
     return response.data;
 };
 
-export const uploadVideo = async (token, chat_id, video, agent) => {
+export const uploadVideo = async (token, chat_id, video, format, agent) => {
     const response = await api.post('/video/upload', {
         token,
         chat_id: chat_id || '',
         video,
+        format,
         agent,
     });
     return response.data;
