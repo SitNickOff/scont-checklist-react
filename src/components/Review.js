@@ -9,8 +9,10 @@ import {
   CardContent,
   CardActions,
   CircularProgress,
+  Link,
 } from "@mui/material";
 import HomeButton from "./HomeButton";
+import { isVideoUrl, normalizeMediaUrls } from "../utils/media";
 
 const messages = {
   ru: {
@@ -18,6 +20,7 @@ const messages = {
     answer: "Ответ:",
     comment: "Комментарий:",
     photo: "Фото:",
+    media: "Медиа:",
     edit: "Редактировать",
     save: "Сохранить (Завершить)",
     errorText: "Требуется ответ",
@@ -29,6 +32,7 @@ const messages = {
     answer: "Answer:",
     comment: "Comment:",
     photo: "Photos:",
+    media: "Media:",
     edit: "Edit",
     save: "Save (Finish)",
     errorText: "Answer required",
@@ -100,11 +104,11 @@ const Review = ({
                   <Typography>{texts.photo}</Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                     {answer.photos.map((photo, i) => {
-                      // Если photo - это base64 строка, используем напрямую, иначе создаем ObjectURL
-                      const photoSrc = typeof photo === 'string' 
-                        ? photo 
-                        : URL.createObjectURL(photo);
-                      
+                      const photoSrc =
+                        typeof photo === "string"
+                          ? photo
+                          : URL.createObjectURL(photo);
+
                       return (
                         <Box key={i} sx={{ position: "relative", m: 1 }}>
                           <img
@@ -116,6 +120,41 @@ const Review = ({
                       );
                     })}
                   </Box>
+                </Box>
+              )}
+              {normalizeMediaUrls(answer.media).length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography>{texts.media}</Typography>
+                  {normalizeMediaUrls(answer.media).map((url, i) => (
+                    <Box key={`${url}-${i}`} sx={{ mt: 1 }}>
+                      {isVideoUrl(url) ? (
+                        <video
+                          src={url}
+                          controls
+                          preload="metadata"
+                          style={{
+                            width: "100%",
+                            maxHeight: 220,
+                            background: "#000",
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={url}
+                          alt="Media"
+                          style={{ maxHeight: 200, maxWidth: "100%" }}
+                        />
+                      )}
+                      <Typography
+                        variant="body2"
+                        sx={{ wordBreak: "break-all" }}
+                      >
+                        <Link href={url} target="_blank" rel="noopener noreferrer">
+                          {url}
+                        </Link>
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
               )}
               {validationErrors[index]?.photo && (

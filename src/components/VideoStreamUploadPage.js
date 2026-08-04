@@ -86,6 +86,7 @@ const messages = {
     openLink: 'Открыть файл',
     copyLink: 'Скопировать ссылку',
     linkCopied: 'Ссылка скопирована',
+    errorCopyLink: 'Не удалось скопировать ссылку',
   },
   en: {
     title: 'Stream video upload',
@@ -106,6 +107,7 @@ const messages = {
     openLink: 'Open file',
     copyLink: 'Copy link',
     linkCopied: 'Link copied',
+    errorCopyLink: 'Failed to copy link',
   },
 };
 
@@ -391,9 +393,11 @@ const VideoStreamUploadPage = () => {
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(item.videoUrl);
+                          setError('');
                           setSuccessMessage(texts.linkCopied);
                         } catch {
-                          setError(texts.errorUpload);
+                          setSuccessMessage('');
+                          setError(texts.errorCopyLink);
                         }
                       }}
                     >

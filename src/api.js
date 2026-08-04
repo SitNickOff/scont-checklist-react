@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { hasRequiredPhotoMedia } from './utils/media';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'https://server.salescontrol.kz/api/',
@@ -89,11 +90,7 @@ function serverAnswerSatisfiesQuestion(savedValue, question) {
         (savedValue &&
             typeof savedValue.comment === "string" &&
             savedValue.comment.trim() !== "");
-    const photoOk =
-        !question.requirePhoto ||
-        (savedValue &&
-            Array.isArray(savedValue.photos) &&
-            savedValue.photos.length > 0);
+    const photoOk = !question.requirePhoto || hasRequiredPhotoMedia(savedValue);
     return textOk && commentOk && photoOk;
 }
 
@@ -125,8 +122,78 @@ const formatToMime = (format, fileType) => {
         '3gp': 'video/3gpp',
         webm: 'video/webm',
         m4v: 'video/x-m4v',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        heic: 'image/heic',
     };
     return map[format] || `video/${format || 'mp4'}`;
+};
+
+const getFileFormat = (file) => {
+    const fromName = file?.name?.split('.').pop()?.toLowerCase();
+    if (fromName) return fromName.replace(/[^\w]/g, '');
+    if (file?.type?.includes('/')) {
+        return file.type.split('/')[1].replace('jpeg', 'jpg');
+    }
+    return file?.type?.startsWith('image/') ? 'jpg' : 'mp4';
+};
+
+/**
+ * Загрузка файла в S3 (presign → PUT).
+ * Без /video/upload/complete — для медиа вопросов чеклиста.
+ * meta: { objectId, checklistId, questionId }
+ */
+export const uploadFileToS3 = async (
+    token,
+    chat_id,
+    file,
+    agent,
+    onUploadProgress,
+    meta = {}
+) => {
+    const format = getFileFormat(file);
+    const contentType =
+        file.type ||
+        formatToMime(format, null) ||
+        'application/octet-stream';
+
+    const { data: presign } = await api.post('/video/upload/presign', {
+        token,
+        chat_id: chat_id || '',
+        format,
+        agent,
+        content_type: contentType,
+        filename: file.name || `file.${format}`,
+        selected_unit: meta.objectId || meta.selected_unit || '',
+        selected_model: meta.checklistId || meta.selected_model || '',
+        question_id: meta.questionId || meta.question_id || '',
+    });
+
+    await axios.put(presign.put_url, file, {
+        headers: {
+            'Content-Type': presign.content_type || contentType,
+        },
+        onUploadProgress,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        timeout: 0,
+    });
+
+    const url = presign.video_url;
+    const type = file.type?.startsWith('video/') ||
+        ['mp4', 'mov', 'webm', 'm4v', '3gp', 'avi', 'mkv'].includes(format)
+        ? 'video'
+        : 'photo';
+
+    return {
+        url,
+        key: presign.key,
+        upload_id: presign.upload_id,
+        type,
+        content_type: presign.content_type || contentType,
+    };
 };
 
 const uploadVideoStreamViaProxy = async (

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { sendDraftAnswer, doneDraft } from "../api";
+import { hasRequiredPhotoMedia, normalizeMediaUrls } from "../utils/media";
 
 export const useQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -10,25 +11,44 @@ export const useQuestions = () => {
   const [maxSteps, setMaxSteps] = useState(0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
-  // Ref для хранения debounce таймеров
+
   const debounceTimers = useRef({});
-  // Ref для хранения сгенерированного draftId (защита от StrictMode)
   const generatedDraftIdRef = useRef(null);
 
-  const validateAnswers = (answers) => {
-    return answers.map((answer, index) => {
+  const buildAnswerPayload = useCallback((answer, questionId) => {
+    const photos = (answer.photos || [])
+      .map((photo) => (typeof photo === "string" ? photo : null))
+      .filter(Boolean);
+    const media = normalizeMediaUrls(answer.media);
+
+    return {
+      text:
+        answer.text !== undefined
+          ? answer.text
+          : Array.isArray(answer.text)
+            ? []
+            : "",
+      comment: answer.comment || "",
+      photos,
+      media,
+      questionId: questionId || answer.questionId,
+    };
+  }, []);
+
+  const validateAnswers = (answersList) => {
+    return answersList.map((answer, index) => {
       const question = questions[index];
-      const isTextValid = question.required 
+      const isTextValid = question.required
         ? Array.isArray(answer.text)
-          ? answer.text.length > 0 // Для массива проверяем, что есть выбранные элементы
-          : answer.text.trim() !== "" // Для строки проверяем, что она не пустая
-        : true; // Если required=false, текст не проверяется.
-  
+          ? answer.text.length > 0
+          : answer.text.trim() !== ""
+        : true;
+
       const isCommentValid =
         !question.requireComment || answer.comment.trim() !== "";
-      const isPhotoValid = !question.requirePhoto || answer.photos.length > 0;
-  
+      const isPhotoValid =
+        !question.requirePhoto || hasRequiredPhotoMedia(answer);
+
       return {
         text: !isTextValid,
         comment: !isCommentValid,
@@ -37,9 +57,21 @@ export const useQuestions = () => {
     });
   };
 
-  const handleNext = async (token, chatId, agent, objectId, checklistId, draftId, setDraftId) => {
-    // Сохраняем текущий ответ перед переходом (только если вопросы загружены)
-    if (!isReview && answers[activeStep] && questions.length > 0 && questions[activeStep]) {
+  const handleNext = async (
+    token,
+    chatId,
+    agent,
+    objectId,
+    checklistId,
+    draftId,
+    setDraftId
+  ) => {
+    if (
+      !isReview &&
+      answers[activeStep] &&
+      questions.length > 0 &&
+      questions[activeStep]
+    ) {
       await saveAnswerToDraft(
         answers[activeStep],
         questions[activeStep].id,
@@ -52,7 +84,7 @@ export const useQuestions = () => {
         setDraftId
       );
     }
-    
+
     if (isReview) {
       setIsReview(false);
       setActiveStep(0);
@@ -79,27 +111,70 @@ export const useQuestions = () => {
     setIsReview(true);
   };
 
-  const convertFileToBase64 = useCallback((file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-  }, []);
-
-  // Генерация draftId на основе даты/времени и chatId
   const generateDraftId = useCallback((chatId) => {
     const now = new Date();
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
     const timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
-    return `${timestamp}_${chatId || 'unknown'}`;
+    return `${timestamp}_${chatId || "unknown"}`;
   }, []);
+
+  const resolveDraftId = useCallback(
+    (draftId, chatId, setDraftId) => {
+      let currentDraftId = draftId;
+      if (!currentDraftId) {
+        if (!generatedDraftIdRef.current) {
+          generatedDraftIdRef.current = generateDraftId(chatId);
+        }
+        currentDraftId = generatedDraftIdRef.current;
+        if (setDraftId) {
+          setDraftId(currentDraftId);
+        }
+      }
+      return currentDraftId;
+    },
+    [generateDraftId]
+  );
+
+  const persistAnswer = useCallback(
+    async (
+      answer,
+      questionId,
+      token,
+      chatId,
+      agent,
+      objectId,
+      checklistId,
+      draftId,
+      setDraftId
+    ) => {
+      const currentDraftId = resolveDraftId(draftId, chatId, setDraftId);
+      const answerData = buildAnswerPayload(answer, questionId);
+
+      const response = await sendDraftAnswer(
+        token,
+        chatId || "",
+        answerData,
+        objectId,
+        checklistId,
+        currentDraftId,
+        questionId || answer.questionId,
+        agent
+      );
+
+      if (response.draft_id && response.draft_id !== currentDraftId) {
+        if (setDraftId) {
+          setDraftId(response.draft_id);
+        }
+        generatedDraftIdRef.current = response.draft_id;
+      }
+    },
+    [buildAnswerPayload, resolveDraftId]
+  );
 
   const saveAnswerToDraft = async (
     answer,
@@ -113,144 +188,71 @@ export const useQuestions = () => {
     setDraftId
   ) => {
     try {
-      // Если draftId нет, генерируем его один раз
-      let currentDraftId = draftId;
-      if (!currentDraftId) {
-        // Используем ref для защиты от StrictMode (избегаем двойной генерации)
-        if (!generatedDraftIdRef.current) {
-          generatedDraftIdRef.current = generateDraftId(chatId);
-        }
-        currentDraftId = generatedDraftIdRef.current;
-        // Сохраняем сгенерированный draftId в Redux
-        if (setDraftId) {
-          setDraftId(currentDraftId);
-        }
-      }
-
-      // Конвертируем фотографии в base64
-      const photos = await Promise.all(
-        (answer.photos || []).map((photo) => {
-          // Если уже base64 строка, возвращаем как есть
-          if (typeof photo === 'string') {
-            return photo;
-          }
-          // Иначе конвертируем Blob в base64
-          return convertFileToBase64(photo);
-        })
-      );
-
-      const answerData = {
-        text: answer.text !== undefined ? answer.text : (Array.isArray(answer.text) ? [] : ""),
-        comment: answer.comment || "",
-        photos: photos,
-        questionId: questionId || answer.questionId,
-      };
-
-      const response = await sendDraftAnswer(
+      await persistAnswer(
+        answer,
+        questionId,
         token,
-        chatId || "",
-        answerData,
+        chatId,
+        agent,
         objectId,
         checklistId,
-        currentDraftId,
-        questionId || answer.questionId,
-        agent
+        draftId,
+        setDraftId
       );
-
-      // Если сервер вернул draft_id и он отличается от нашего - используем серверный
-      if (response.draft_id && response.draft_id !== currentDraftId) {
-        if (setDraftId) {
-          setDraftId(response.draft_id);
-        }
-        generatedDraftIdRef.current = response.draft_id;
-      }
     } catch (error) {
       console.error("Ошибка сохранения черновика:", error);
-      // Продолжаем без сохранения при ошибке
     }
   };
 
-  const debouncedSaveAnswer = useCallback((
-    answer,
-    questionId,
-    token,
-    chatId,
-    agent,
-    objectId,
-    checklistId,
-    draftId,
-    setDraftId
-  ) => {
-    const timerKey = questionId || 'default';
-    
-    // Очищаем предыдущий таймер для этого вопроса
-    if (debounceTimers.current[timerKey]) {
-      clearTimeout(debounceTimers.current[timerKey]);
-    }
-    
-    // Устанавливаем новый таймер
-    debounceTimers.current[timerKey] = setTimeout(async () => {
-      try {
-        // Если draftId нет, генерируем его один раз
-        let currentDraftId = draftId;
-        if (!currentDraftId) {
-          // Используем ref для защиты от StrictMode (избегаем двойной генерации)
-          if (!generatedDraftIdRef.current) {
-            generatedDraftIdRef.current = generateDraftId(chatId);
-          }
-          currentDraftId = generatedDraftIdRef.current;
-          // Сохраняем сгенерированный draftId в Redux
-          if (setDraftId) {
-            setDraftId(currentDraftId);
-          }
-        }
+  const debouncedSaveAnswer = useCallback(
+    (
+      answer,
+      questionId,
+      token,
+      chatId,
+      agent,
+      objectId,
+      checklistId,
+      draftId,
+      setDraftId
+    ) => {
+      const timerKey = questionId || "default";
 
-        // Конвертируем фотографии в base64
-        const photos = await Promise.all(
-          (answer.photos || []).map((photo) => {
-            // Если уже base64 строка, возвращаем как есть
-            if (typeof photo === 'string') {
-              return photo;
-            }
-            // Иначе конвертируем Blob в base64
-            return convertFileToBase64(photo);
-          })
-        );
-
-        const answerData = {
-          text: answer.text !== undefined ? answer.text : (Array.isArray(answer.text) ? [] : ""),
-          comment: answer.comment || "",
-          photos: photos,
-          questionId: questionId || answer.questionId,
-        };
-
-        const response = await sendDraftAnswer(
-          token,
-          chatId || "",
-          answerData,
-          objectId,
-          checklistId,
-          currentDraftId,
-          questionId || answer.questionId,
-          agent
-        );
-
-        // Если сервер вернул draft_id и он отличается от нашего - используем серверный
-        if (response.draft_id && response.draft_id !== currentDraftId) {
-          if (setDraftId) {
-            setDraftId(response.draft_id);
-          }
-          generatedDraftIdRef.current = response.draft_id;
-        }
-      } catch (error) {
-        console.error("Ошибка сохранения черновика:", error);
-        // Продолжаем без сохранения при ошибке
+      if (debounceTimers.current[timerKey]) {
+        clearTimeout(debounceTimers.current[timerKey]);
       }
-      delete debounceTimers.current[timerKey];
-    }, 1000); // Debounce 1 секунда
-  }, [convertFileToBase64, generateDraftId]);
 
-  const handleSave = async (chatId, token, agent, selectedUnit, selectedModel, draftId, clearDraftId) => {
+      debounceTimers.current[timerKey] = setTimeout(async () => {
+        try {
+          await persistAnswer(
+            answer,
+            questionId,
+            token,
+            chatId,
+            agent,
+            objectId,
+            checklistId,
+            draftId,
+            setDraftId
+          );
+        } catch (error) {
+          console.error("Ошибка сохранения черновика:", error);
+        }
+        delete debounceTimers.current[timerKey];
+      }, 1000);
+    },
+    [persistAnswer]
+  );
+
+  const handleSave = async (
+    chatId,
+    token,
+    agent,
+    selectedUnit,
+    selectedModel,
+    draftId,
+    clearDraftId
+  ) => {
     const errors = validateAnswers(answers);
     setValidationErrors(errors);
     const hasErrors = errors.some(
@@ -262,8 +264,7 @@ export const useQuestions = () => {
     } else {
       try {
         setLoading(true);
-        
-        // Если есть draft_id, используем /draft/done
+
         if (draftId) {
           const response = await doneDraft(
             token,
@@ -273,22 +274,21 @@ export const useQuestions = () => {
             questions
           );
           console.log({ response });
-          
-          // Очищаем draft_id после успешного завершения
+
           if (response.status === "ok") {
             if (clearDraftId) {
               clearDraftId();
             }
-            // Очищаем ref для следующего использования
             generatedDraftIdRef.current = null;
             setLoading(false);
             setSuccess(true);
           } else {
             setLoading(false);
-            alert("Ошибка при завершении черновика. Пожалуйста, попробуйте снова.");
+            alert(
+              "Ошибка при завершении черновика. Пожалуйста, попробуйте снова."
+            );
           }
         } else {
-          // Fallback на старый метод, если draft_id нет (не должно происходить)
           alert("Ошибка: черновик не найден. Пожалуйста, попробуйте снова.");
           setLoading(false);
         }
@@ -315,11 +315,18 @@ export const useQuestions = () => {
     draftId,
     setDraftId
   ) => {
+    const patch =
+      field && typeof field === "object" && value === undefined
+        ? field
+        : { [field]: value };
+
     setAnswers((prevAnswers) => {
       const newAnswers = [...prevAnswers];
-      newAnswers[index][field] = value;
-      
-      // Автосохранение с debounce (только если вопросы загружены)
+      newAnswers[index] = {
+        ...newAnswers[index],
+        ...patch,
+      };
+
       if (token && questions.length > 0 && questions[index]) {
         debouncedSaveAnswer(
           newAnswers[index],
@@ -333,7 +340,7 @@ export const useQuestions = () => {
           setDraftId
         );
       }
-      
+
       return newAnswers;
     });
   };
@@ -356,11 +363,17 @@ export const useQuestions = () => {
   ) => {
     setAnswers((prevAnswers) => {
       const newAnswers = [...prevAnswers];
-      newAnswers[index].photos = newAnswers[index].photos.filter(
-        (_, i) => i !== photoIndex
-      );
-      
-      // Автосохранение после удаления фото (только если вопросы загружены)
+      const current = { ...newAnswers[index] };
+      const photos = [...(current.photos || [])];
+      const removedUrl = photos[photoIndex];
+      current.photos = photos.filter((_, i) => i !== photoIndex);
+      if (removedUrl && typeof removedUrl === "string") {
+        current.media = normalizeMediaUrls(current.media).filter(
+          (url) => url !== removedUrl
+        );
+      }
+      newAnswers[index] = current;
+
       if (token && questions.length > 0 && questions[index]) {
         debouncedSaveAnswer(
           newAnswers[index],
@@ -374,7 +387,49 @@ export const useQuestions = () => {
           setDraftId
         );
       }
-      
+
+      return newAnswers;
+    });
+  };
+
+  const handleRemoveMedia = (
+    index,
+    mediaIndex,
+    token,
+    chatId,
+    agent,
+    objectId,
+    checklistId,
+    draftId,
+    setDraftId
+  ) => {
+    setAnswers((prevAnswers) => {
+      const newAnswers = [...prevAnswers];
+      const current = { ...newAnswers[index] };
+      const media = normalizeMediaUrls(current.media);
+      const removedUrl = media[mediaIndex];
+      current.media = media.filter((_, i) => i !== mediaIndex);
+      if (removedUrl) {
+        current.photos = (current.photos || []).filter(
+          (photo) => photo !== removedUrl
+        );
+      }
+      newAnswers[index] = current;
+
+      if (token && questions.length > 0 && questions[index]) {
+        debouncedSaveAnswer(
+          newAnswers[index],
+          questions[index].id,
+          token,
+          chatId,
+          agent,
+          objectId,
+          checklistId,
+          draftId,
+          setDraftId
+        );
+      }
+
       return newAnswers;
     });
   };
@@ -394,6 +449,7 @@ export const useQuestions = () => {
     handleChange,
     handleEdit,
     handleRemovePhoto,
+    handleRemoveMedia,
     maxSteps,
     setMaxSteps,
     loading,

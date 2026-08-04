@@ -32,6 +32,7 @@ const messages = {
     success: 'Видео успешно отправлено',
     errorUpload: 'Не удалось отправить видео',
     errorType: 'Выберите файл в формате видео',
+    errorFormat: 'Не удалось определить формат видео',
     errorSize: `Размер файла не должен превышать ${MAX_VIDEO_SIZE_MB} МБ`,
     statusOk: 'Отправлено',
     statusError: 'Ошибка',
@@ -48,6 +49,7 @@ const messages = {
     success: 'Video sent successfully',
     errorUpload: 'Failed to send video',
     errorType: 'Please select a video file',
+    errorFormat: 'Could not detect video format',
     errorSize: `File size must not exceed ${MAX_VIDEO_SIZE_MB} MB`,
     statusOk: 'Sent',
     statusError: 'Error',
@@ -119,8 +121,14 @@ const VideoUploadPage = () => {
   }, [selectedFile]);
 
   const validateFile = (file) => {
-    if (!file.type.startsWith('video/')) {
+    const hasVideoMime = Boolean(file.type?.startsWith('video/'));
+    const format = getVideoFormat(file);
+    if (!hasVideoMime && !format) {
       setError(texts.errorType);
+      return false;
+    }
+    if (!format) {
+      setError(texts.errorFormat);
       return false;
     }
     if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
@@ -143,12 +151,17 @@ const VideoUploadPage = () => {
   const handleUpload = async () => {
     if (!selectedFile || uploading) return;
 
+    const format = getVideoFormat(selectedFile);
+    if (!format) {
+      setError(texts.errorFormat);
+      return;
+    }
+
     setUploading(true);
     setError('');
     setSuccessMessage('');
 
     const sentAt = new Date().toISOString();
-    const format = getVideoFormat(selectedFile);
     const entryBase = {
       id: `${Date.now()}`,
       name: selectedFile.name,

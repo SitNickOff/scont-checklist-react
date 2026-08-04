@@ -74,6 +74,7 @@ const QuestionsStepper = () => {
     handleChange,
     handleEdit,
     handleRemovePhoto,
+    handleRemoveMedia,
     maxSteps,
     setMaxSteps,
     loading: savingLoading,
@@ -137,6 +138,7 @@ const QuestionsStepper = () => {
           text: i.multi === "single" ? "" : [],
           comment: "",
           photos: [],
+          media: [],
           questionId: i.yardstick,
         }));
         
@@ -252,6 +254,9 @@ const QuestionsStepper = () => {
                     text: savedValue.text !== undefined ? savedValue.text : newAnswers[answerIndex].text,
                     comment: savedValue.comment !== undefined ? savedValue.comment : newAnswers[answerIndex].comment,
                     photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || newAnswers[answerIndex].photos),
+                    media: Array.isArray(savedValue.media)
+                      ? savedValue.media
+                      : (savedValue.media || newAnswers[answerIndex].media || []),
                   };
                 }
 
@@ -322,6 +327,9 @@ const QuestionsStepper = () => {
                   text: savedValue.text !== undefined ? savedValue.text : newAnswers[answerIndex].text,
                   comment: savedValue.comment !== undefined ? savedValue.comment : newAnswers[answerIndex].comment,
                   photos: Array.isArray(savedValue.photos) ? savedValue.photos : (savedValue.photos || newAnswers[answerIndex].photos),
+                  media: Array.isArray(savedValue.media)
+                    ? savedValue.media
+                    : (savedValue.media || newAnswers[answerIndex].media || []),
                 };
               }
               
@@ -477,6 +485,7 @@ const QuestionsStepper = () => {
                   <CircularProgress />
                 </Box>
               )}
+              {questions[activeStep] && answers[activeStep] && (
               <QuestionForm
                 questionIndex={activeStep}
                 question={questions[activeStep]}
@@ -509,7 +518,21 @@ const QuestionsStepper = () => {
                     (id) => dispatch(setDraftId(id))
                   )
                 }
+                handleRemoveMedia={(index, mediaIndex) =>
+                  handleRemoveMedia(
+                    index,
+                    mediaIndex,
+                    token,
+                    chatId,
+                    agent,
+                    objectId,
+                    checklistId,
+                    draftId,
+                    (id) => dispatch(setDraftId(id))
+                  )
+                }
               />
+              )}
             </Box>
           )}
         </Box>
