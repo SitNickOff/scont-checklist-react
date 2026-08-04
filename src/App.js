@@ -6,6 +6,7 @@ import ObjectsList from './components/ObjectsList';
 import ChecklistList from './components/ChecklistList';
 import QuestionsStepper from './components/QuestionsStepper';
 import VideoUploadPage from './components/VideoUploadPage';
+import VideoStreamUploadPage from './components/VideoStreamUploadPage';
 import ThemeProviderWrapper from './ThemeProviderWrapper';
 
 const STORAGE_KEYS = {
@@ -103,6 +104,7 @@ const App = () => {
               <Route path="/checklists" element={<ChecklistList />} />
               <Route path="/questions" element={<QuestionsStepper />} />
               <Route path="/videos" element={<VideoUploadPage />} />
+              <Route path="/videos/stream" element={<VideoStreamUploadPage />} />
               <Route path="*" element={<Navigate to={`/objects${window.location.search || ''}`} />} />
             </>
           ) : (
