@@ -169,6 +169,8 @@ export const uploadFileToS3 = async (
         selected_unit: meta.objectId || meta.selected_unit || '',
         selected_model: meta.checklistId || meta.selected_model || '',
         question_id: meta.questionId || meta.question_id || '',
+        draft_id: meta.draftId || meta.draft_id || '',
+        date: meta.date || new Date().toISOString().slice(0, 10),
     });
 
     await axios.put(presign.put_url, file, {

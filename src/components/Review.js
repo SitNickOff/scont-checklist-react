@@ -99,30 +99,7 @@ const Review = ({
               {validationErrors[index]?.comment && (
                 <Alert severity="error">{texts.errorComment}</Alert>
               )}
-              {answer.photos && answer.photos.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography>{texts.photo}</Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                    {answer.photos.map((photo, i) => {
-                      const photoSrc =
-                        typeof photo === "string"
-                          ? photo
-                          : URL.createObjectURL(photo);
-
-                      return (
-                        <Box key={i} sx={{ position: "relative", m: 1 }}>
-                          <img
-                            src={photoSrc}
-                            alt="Preview"
-                            style={{ maxHeight: "200px", maxWidth: "200px" }}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                </Box>
-              )}
-              {normalizeMediaUrls(answer.media).length > 0 && (
+              {normalizeMediaUrls(answer.media).length > 0 ? (
                 <Box sx={{ mt: 2 }}>
                   <Typography>{texts.media}</Typography>
                   {normalizeMediaUrls(answer.media).map((url, i) => (
@@ -156,6 +133,31 @@ const Review = ({
                     </Box>
                   ))}
                 </Box>
+              ) : (
+                answer.photos &&
+                answer.photos.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography>{texts.photo}</Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                      {answer.photos.map((photo, i) => {
+                        const photoSrc =
+                          typeof photo === "string"
+                            ? photo
+                            : URL.createObjectURL(photo);
+
+                        return (
+                          <Box key={i} sx={{ position: "relative", m: 1 }}>
+                            <img
+                              src={photoSrc}
+                              alt="Preview"
+                              style={{ maxHeight: "200px", maxWidth: "200px" }}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                )
               )}
               {validationErrors[index]?.photo && (
                 <Alert severity="error">{texts.errorPhoto}</Alert>

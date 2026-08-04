@@ -65,6 +65,7 @@ const QuestionForm = ({
     agent,
     objectId,
     checklistId,
+    draftId,
   } = useSelector((state) => state.app);
   const texts = messages[lang] || messages.ru;
   const [uploading, setUploading] = useState(false);
@@ -159,6 +160,7 @@ const QuestionForm = ({
             objectId,
             checklistId,
             questionId: question.id,
+            draftId,
           }
         );
         uploaded.push(result);
@@ -208,7 +210,6 @@ const QuestionForm = ({
   }
 
   const mediaUrls = normalizeMediaUrls(answer.media);
-  const photos = Array.isArray(answer.photos) ? answer.photos : [];
 
   return (
     <Box>
@@ -405,41 +406,6 @@ const QuestionForm = ({
         <Typography color="error" variant="body2" sx={{ mt: 1 }}>
           {uploadError}
         </Typography>
-      )}
-
-      {photos.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography>{texts.photos}</Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-            {photos.map((photo, index) => {
-              const photoSrc =
-                typeof photo === "string" ? photo : URL.createObjectURL(photo);
-
-              return (
-                <Box key={index} sx={{ position: "relative", m: 1 }}>
-                  <img
-                    src={photoSrc}
-                    alt="Preview"
-                    style={{ maxHeight: "200px", maxWidth: "200px" }}
-                  />
-                  <IconButton
-                    color="secondary"
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      color: "red",
-                    }}
-                    onClick={() => handleRemovePhoto(questionIndex, index)}
-                    disabled={uploading}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
       )}
 
       {mediaUrls.length > 0 && (
