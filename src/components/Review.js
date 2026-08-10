@@ -20,7 +20,8 @@ const messages = {
     answer: "Ответ:",
     comment: "Комментарий:",
     photo: "Фото:",
-    media: "Медиа:",
+    media: "Загруженные файлы:",
+    fileLabel: "Файл",
     edit: "Редактировать",
     save: "Сохранить (Завершить)",
     errorText: "Требуется ответ",
@@ -32,7 +33,8 @@ const messages = {
     answer: "Answer:",
     comment: "Comment:",
     photo: "Photos:",
-    media: "Media:",
+    media: "Uploaded files:",
+    fileLabel: "File",
     edit: "Edit",
     save: "Save (Finish)",
     errorText: "Answer required",
@@ -122,12 +124,9 @@ const Review = ({
                           style={{ maxHeight: 200, maxWidth: "100%" }}
                         />
                       )}
-                      <Typography
-                        variant="body2"
-                        sx={{ wordBreak: "break-all" }}
-                      >
+                      <Typography variant="body2">
                         <Link href={url} target="_blank" rel="noopener noreferrer">
-                          {url}
+                          {`${texts.fileLabel} ${i + 1}`}
                         </Link>
                       </Typography>
                     </Box>

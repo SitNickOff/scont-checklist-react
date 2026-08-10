@@ -30,7 +30,8 @@ const messages = {
     comment: "Комментарий",
     links: "Ссылки:",
     photos: "Фото:",
-    media: "Медиа:",
+    media: "Загруженные файлы:",
+    fileLabel: "Файл",
     requiredQuestion: "Обязательный вопрос",
     requiredComment: "Обязательный комментарий",
     uploadError: "Не удалось загрузить файл в хранилище",
@@ -40,7 +41,8 @@ const messages = {
     comment: "Comment",
     links: "Links:",
     photos: "Photos:",
-    media: "Media:",
+    media: "Uploaded files:",
+    fileLabel: "File",
     requiredQuestion: "Required question",
     requiredComment: "Required comment",
     uploadError: "Failed to upload file to storage",
@@ -169,13 +171,14 @@ const QuestionForm = ({
       const nextPhotos = [...(answer.photos || [])];
       const nextMedia = normalizeMediaUrls(answer.media);
 
+      // Новые файлы — в начало списка (последний загруженный сверху)
       uploaded.forEach((item) => {
         if (!item?.url) return;
         if (!nextMedia.includes(item.url)) {
-          nextMedia.push(item.url);
+          nextMedia.unshift(item.url);
         }
         if (item.type === "photo" && !nextPhotos.includes(item.url)) {
-          nextPhotos.push(item.url);
+          nextPhotos.unshift(item.url);
         }
       });
 
@@ -442,12 +445,9 @@ const QuestionForm = ({
                     style={{ maxHeight: 200, maxWidth: "100%" }}
                   />
                 )}
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 0.5, wordBreak: "break-all" }}
-                >
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
                   <Link href={url} target="_blank" rel="noopener noreferrer">
-                    {url}
+                    {`${texts.fileLabel} ${index + 1}`}
                   </Link>
                 </Typography>
                 {handleRemoveMedia && (
