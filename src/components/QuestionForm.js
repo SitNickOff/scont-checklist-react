@@ -74,6 +74,12 @@ const QuestionForm = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState("");
 
+  if (!question || !answer) {
+    return null;
+  }
+
+  const mediaUrls = normalizeMediaUrls(answer.media);
+
   const resizeImage = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -196,7 +202,7 @@ const QuestionForm = ({
   };
 
   const handleCheckboxChange = (option) => {
-    const currentAnswers = answer.text || [];
+    const currentAnswers = Array.isArray(answer.text) ? answer.text : [];
     if (currentAnswers.includes(option)) {
       handleChange(
         questionIndex,
@@ -207,12 +213,6 @@ const QuestionForm = ({
       handleChange(questionIndex, "text", [...currentAnswers, option]);
     }
   };
-
-  if (!question || !answer) {
-    return null;
-  }
-
-  const mediaUrls = normalizeMediaUrls(answer.media);
 
   return (
     <Box>

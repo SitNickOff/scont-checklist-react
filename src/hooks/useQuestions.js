@@ -22,12 +22,7 @@ export const useQuestions = () => {
     const media = normalizeMediaUrls(answer.media);
 
     return {
-      text:
-        answer.text !== undefined
-          ? answer.text
-          : Array.isArray(answer.text)
-            ? []
-            : "",
+      text: answer.text !== undefined && answer.text !== null ? answer.text : "",
       comment: answer.comment || "",
       photos,
       media,
